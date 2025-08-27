@@ -4,7 +4,7 @@
 int main() {
     // Inicializar ncurses
     initscr();
-    printw("Hello, ncurses!\n");
+    printw("PROYECTO 1 - MICROPROCESADORES");
     refresh();
     getch();
     endwin();
