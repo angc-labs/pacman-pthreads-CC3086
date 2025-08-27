@@ -1,0 +1,22 @@
+# Build directories
+/build/
+/bin/
+
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+*.cmake
+CTestTestfile.cmake
+
+# Conan
+conanbuildinfo.cmake
+conaninfo.txt
+conan.lock
+conan_data/
+*.conan
+build/conaninfo.txt
+build/conanbuildinfo.cmake
+
+.vscode/
+*.exe

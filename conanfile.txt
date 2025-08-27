@@ -1,0 +1,6 @@
+[requires]
+ncurses/6.4
+
+[generators]
+CMakeDeps
+CMakeToolchain
