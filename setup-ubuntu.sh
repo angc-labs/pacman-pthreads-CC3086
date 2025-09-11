@@ -3,6 +3,8 @@
 set -e
 echo "PROYECTO 1-PACMAN-SETUP"
 
+sudo apt install python3-pip
+
 if ! command -v conan &> /dev/null; then
     echo "INSTALANDO CONAN"
     pip install --user conan
