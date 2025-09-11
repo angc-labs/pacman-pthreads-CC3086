@@ -4,6 +4,9 @@ set -e
 echo "PROYECTO 1-PACMAN-SETUP"
 
 sudo apt install python3-pip
+sudo apt install python3.12-venv
+python3 -m venv venv
+source ./venv/bin/activate
 
 if ! command -v conan &> /dev/null; then
     echo "INSTALANDO CONAN"
