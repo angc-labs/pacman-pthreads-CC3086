@@ -16,7 +16,7 @@
 
 using namespace std;
 
-class Mapa {
+class Mapa{
     private:
         vector<Object*> mapa; //Vector para almacenar punteros a objetos (paredes, puntos, etc.)
         int score, vidas, ancho, alto; //Puntuación, vidas, ancho y alto del mapa
