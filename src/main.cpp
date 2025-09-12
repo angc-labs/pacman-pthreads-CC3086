@@ -4,6 +4,11 @@
 #include <unistd.h> // Necesario para la función usleep()
 
 void gameLoop() {
+    // Inicializar ncurses
+    initscr();
+    printw("PROYECTO 1 - MICROPROCESADORES");
+
+    int score = 0;
     int ch; // Almacena la tecla presionada
 
     nodelay(stdscr, TRUE);
@@ -17,11 +22,14 @@ void gameLoop() {
         }
 
         clear();
+
+        // Llamada a la función para mostrar puntuación
+        drawGameHUD(score);
     
         refresh(); // Actualizando la pantalla para mostrar cambios
 
         // Pausa de 0.1 segundo para que el juego no corra muy rápido
-        usleep(100000)
+        usleep(100000);
     }
 
     nodelay(stdscr, FALSE);
@@ -43,9 +51,6 @@ int main() {
 
     closeNcurses(); // Restauración de configuración original de la terminal
 
-    // Inicializar ncurses
-    initscr();
-    printw("PROYECTO 1 - MICROPROCESADORES");
     refresh();
     getch();
     endwin();

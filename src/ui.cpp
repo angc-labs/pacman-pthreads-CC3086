@@ -80,3 +80,13 @@ int drawMainMenu() {
         }
     }
 }
+
+/* Tarea 2: 
+   - Mostrar puntación:
+        * Se dibuja el Head-Up Display con la información del juego. */
+void drawGameHUD(int score) {
+    attron(COLOR_PAIR(2) | A_BOLD);
+    // Ajuste al ancho de la terminal mediante COLS
+    mvprintw(1, 2, "Score: %d", score);
+    attroff(COLOR_PAIR(2) | A_BOLD);
+}
