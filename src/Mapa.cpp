@@ -9,12 +9,12 @@
 #include <iostream>
 #include <ncurses.h>
 #include <vector>
-#include "Object.h"
-#include "PowerUp.h"
+#include "../headers/Object.h"
+#include "../headers/PowerUp.h"
 
 using namespace std;
 
-class Mapa(){
+class Mapa {
     private:
         Vector<Object*> mapa; //Vector para almacenar punteros a objetos (paredes, puntos, etc.)
         int score, vidas, ancho, alto; //Puntuación, vidas, ancho y alto del mapa
@@ -107,5 +107,4 @@ class Mapa(){
         int getVidas() const{ //Función para obtener las vidas
             return vidas;
         }
-
 }
