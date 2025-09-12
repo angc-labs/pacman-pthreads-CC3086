@@ -11,14 +11,16 @@
 #include <vector>
 #include "../headers/Object.h"
 #include "../headers/PowerUp.h"
+#include "../headers/Pared.h"
+#include "../headers/Punto.h"
 
 using namespace std;
 
 class Mapa {
     private:
-        Vector<Object*> mapa; //Vector para almacenar punteros a objetos (paredes, puntos, etc.)
+        vector<Object*> mapa; //Vector para almacenar punteros a objetos (paredes, puntos, etc.)
         int score, vidas, ancho, alto; //Puntuación, vidas, ancho y alto del mapa
-        Vector<PowerUp*> powerups; //Vector para almacenar punteros a power-ups
+        vector<PowerUp*> powerups; //Vector para almacenar punteros a power-ups
 
     public:
         Mapa(int ancho, int alto) : ancho(ancho), alto(alto), score(0), vidas(3) {} //Constructor
@@ -43,7 +45,8 @@ class Mapa {
             }
         }
 
-        void setYPuente(y, size){ //Función para crear el puente vertical
+
+        void setYPuente(int y, int size){ //Función para crear el puente vertical
             for (int x = 1; x < ancho - 1; x++){
                 if (x < size || x >= ancho - size){
                     Object* obj = getObjectAt(x, y);
@@ -52,7 +55,7 @@ class Mapa {
             }
         }
 
-        void setXPuente(x, size){ //Función para crear el puente horizontal
+        void setXPuente(int x, int size){ //Función para crear el puente horizontal
             for (int y = 1; y < alto - 1; y++){
                 if (y < size || y >= alto - size){
                     Object* obj = getObjectAt(x, y);
@@ -61,28 +64,32 @@ class Mapa {
             }
         }
 
-        void setVerticalLine(x, startY, endY){ //Función para establecer una línea vertical (pared)
-            ymin = max(1, startY);
-            ymax = min(alto - 2, endY);
-            for (int y = startY; y <= endY; y++){
+        void setVerticalLine(int x, int startY, int endY){ //Función para establecer una línea vertical (pared)
+            int ymin = std::max(1, startY);
+            int ymax = std::min(alto - 2, endY);
+            for (int y = ymin; y <= ymax; y++){
                 Object* obj = getObjectAt(x, y);
                 if (obj) obj->setSprite('#'); //Establece la pared
             }
         }
 
-        Object* getObjectAt(x, y){ //Función para obtener un objeto en una posición específica
+        Object* getObjectAt(int x, int y){ //Función para obtener un objeto en una posición específica
             for (Object* obj : mapa){
-                if (obj -> getX() == x && obj -> getY() == y){
+                if (obj->getX() == x && obj->getY() == y){
                     return obj;
                 }
             }
             return nullptr;
         }
 
-        bool isWall(x, y);{ //Función para verificar si hay una pared en una posición específica
+        bool isWall(int x, int y){ //Función para verificar si hay una pared en una posición específica
             Object* obj = getObjectAt(x, y);
-            return obj && obj->getSprite() == '#';
-        } 
+            // Si quieres usar el sprite, necesitas un getter
+            // return obj && obj->getSprite() == '#';
+            // Como no existe getSprite, puedes comparar indirectamente:
+            // Si el objeto es de tipo Pared, entonces es pared
+            return obj && dynamic_cast<Pared*>(obj) != nullptr;
+        }
 
         //Agregados 
         void draw(){ //Función para dibujar el mapa
@@ -107,4 +114,4 @@ class Mapa {
         int getVidas() const{ //Función para obtener las vidas
             return vidas;
         }
-}
+};
