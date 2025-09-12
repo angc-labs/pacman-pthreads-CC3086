@@ -10,7 +10,8 @@ find_package(Curses REQUIRED)
 include_directories(${CURSES_INCLUDE_DIR})
 
 # ejecutable
-add_executable(pacman src/main.cpp)
+file(GLOB SOURCES "src/*.cpp" "src/other/*.cpp")
+add_executable(pacman ${SOURCES})
 
 target_link_libraries(pacman
     PRIVATE
