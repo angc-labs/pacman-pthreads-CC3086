@@ -4,21 +4,21 @@
  * 12 / 09 / 2025
  */
 
-#include "./../headers/Object.h"
+#include "./../headers/PowerUp.h"
 #include <string>
 
-class PowerUp : public Object {
 // tipo de powerup
 // HINT: actualizar a una mejor forma
-private:
-    std::string tipo;
+// constructor
+PowerUp::PowerUp(
+    int x, int y, std::string t
+    ) : Object(x, y, 'P'), tipo(t) {}
 
-public:
-    // constructor
-    PowerUp(int x, int y, std::string t) : Object(x, y, 'O'), tipo(t) {}
-
-    // funcion para activar efecto del powerup
-    void activarEfecto() {
+// funcion para activar efecto del powerup
+void PowerUp::activarEfecto() {
         // HINT: efecto
-    }
-};
+}
+
+std::string PowerUp::getTipo() const {
+    return tipo;
+}

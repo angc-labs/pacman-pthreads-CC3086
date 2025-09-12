@@ -4,35 +4,31 @@
  * 12 / 09 / 2025
  */
 #include <ncurses.h>
+#include "./../headers/Object.h"
 
-class Object {
-protected:
-    int x, y;
-    char sprite;
-    
-public:
-    // contructor
-    Object(int x = 0, int y = 0, char sprite = ' ') : x(x), y(y), sprite(sprite) {}
-    virtual ~Object() {}
+Object::Object(int x, int y, char sprite) : x(x), y(y), sprite(sprite) {
+}
 
-    // dibujar objeto en algun lugar de la pantalla
-    virtual void draw() {
-        mvaddch(y, x, sprite);
-    }
+Object::~Object() {
+}
 
-    // control de posicion
-    virtual void update() {}
+void Object::draw() {
+    mvaddch(y, x, sprite);
+}
 
-    // getters
-    int getX() const {
-        return x;
-    }
-    int getY() const {
-        return y;
-    }
-    // setters
-    void setPos(int newX, int newY) {
-        x = newX;
-        y = newY;
-    }
-};
+void Object::update() {
+    // Implementación por defecto vacía
+}
+
+int Object::getX() const {
+    return x;
+}
+
+int Object::getY() const {
+    return y;
+}
+
+void Object::setPos(int newX, int newY) {
+    x = newX;
+    y = newY;
+}

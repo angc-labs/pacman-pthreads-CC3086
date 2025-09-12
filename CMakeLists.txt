@@ -15,7 +15,10 @@ add_executable(pacman ${SOURCES}
         src/Object.cpp
         headers/Object.h
         src/PowerUp.cpp
-        headers/PowerUp.h)
+        headers/PowerUp.h
+        src/Pacman.cpp
+        headers/Pacman.h
+)
 
 target_link_libraries(pacman
     PRIVATE
