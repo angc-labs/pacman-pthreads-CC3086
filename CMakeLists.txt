@@ -11,7 +11,11 @@ include_directories(${CURSES_INCLUDE_DIR})
 
 # ejecutable
 file(GLOB SOURCES "src/*.cpp" "src/other/*.cpp")
-add_executable(pacman ${SOURCES})
+add_executable(pacman ${SOURCES}
+        src/Object.cpp
+        headers/Object.h
+        src/PowerUp.cpp
+        headers/PowerUp.h)
 
 target_link_libraries(pacman
     PRIVATE
