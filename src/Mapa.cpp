@@ -6,112 +6,195 @@
 * Carnét: 24630
 */
 
-#include <iostream>
-#include <ncurses.h>
-#include <vector>
-#include "../headers/Object.h"
-#include "../headers/PowerUp.h"
+#include "../headers/Mapa.h"
 #include "../headers/Pared.h"
 #include "../headers/Punto.h"
+#include <ncurses.h>
+#include <algorithm>
 
-using namespace std;
+Mapa::Mapa() : score(0), vidas(3) {
+    // Obtener dimensiones automáticamente
+    int maxY, maxX;
+    getmaxyx(stdscr, maxY, maxX);
+    ancho = maxX;
+    alto = maxY - 3;  // Reservar 3 líneas para información
+}
 
-class Mapa{
-    private:
-        vector<Object*> mapa; //Vector para almacenar punteros a objetos (paredes, puntos, etc.)
-        int score, vidas, ancho, alto; //Puntuación, vidas, ancho y alto del mapa
-        vector<PowerUp*> powerups; //Vector para almacenar punteros a power-ups
+Mapa::~Mapa() {
+    // Liberar memoria de todos los objetos
+    for (Object* obj : mapa) {
+        delete obj;
+    }
+    for (PowerUp* power : powerups) {
+        delete power;
+    }
+}
 
-    public:
-        Mapa(int ancho, int alto) : ancho(ancho), alto(alto), score(0), vidas(3) {} //Constructor
+void Mapa::generarMapa() {
+    // Limpiar vectores existentes
+    for (Object* obj : mapa) {
+        delete obj;
+    }
+    for (PowerUp* power : powerups) {
+        delete power;
+    }
+    mapa.clear();
+    powerups.clear();
 
-        ~Mapa() { //Destructor
-            for (auto obj : mapa) delete obj;
-            for (auto p : powerups) delete p;
-        }
-
-        void generarMapa(){ //Función para generar el mapa
-            mapa.clear();
-            powerups.clear();
-
-            for (int y = 0; y < alto; y++){
-                for (int x = 0; x < ancho; x++){
-                    if (y == 0 || y == alto - 1 || x == 0 || x == ancho - 1){
-                        mapa.push_back(new Pared(x, y));   //Derivada de Object
-                    }else{
-                        mapa.push_back(new Punto(x, y));   //Derivada de Object
-                    }
-                }
+    // Generar solo las paredes del borde y algunos puntos
+    for (int y = 0; y < alto; y++) {
+        for (int x = 0; x < ancho; x++) {
+            if (y == 0 || y == alto - 1 || x == 0 || x == ancho - 1) {
+                // Paredes en los bordes
+                mapa.push_back(new Pared(x, y));
+            } else if (x % 4 == 0 && y % 2 == 0 && x < ancho - 4 && y < alto - 4) {
+                // Algunos puntos esparcidos (no llenar toda la pantalla)
+                mapa.push_back(new Punto(x, y));
             }
         }
+    }
+}
 
-
-        void setYPuente(int y, int size){ //Función para crear el puente vertical
-            for (int x = 1; x < ancho - 1; x++){
-                if (x < size || x >= ancho - size){
-                    Object* obj = getObjectAt(x, y);
-                    if (obj) obj->setSprite(' '); //Borra la pared/punto
-                }
-            }
-        }
-
-        void setXPuente(int x, int size){ //Función para crear el puente horizontal
-            for (int y = 1; y < alto - 1; y++){
-                if (y < size || y >= alto - size){
-                    Object* obj = getObjectAt(x, y);
-                    if (obj) obj->setSprite(' '); //Borra la pared/punto
-                }
-            }
-        }
-
-        void setVerticalLine(int x, int startY, int endY){ //Función para establecer una línea vertical (pared)
-            int ymin = std::max(1, startY);
-            int ymax = std::min(alto - 2, endY);
-            for (int y = ymin; y <= ymax; y++){
-                Object* obj = getObjectAt(x, y);
-                if (obj) obj->setSprite('#'); //Establece la pared
-            }
-        }
-
-        Object* getObjectAt(int x, int y){ //Función para obtener un objeto en una posición específica
-            for (Object* obj : mapa){
-                if (obj->getX() == x && obj->getY() == y){
-                    return obj;
-                }
-            }
-            return nullptr;
-        }
-
-        bool isWall(int x, int y){ //Función para verificar si hay una pared en una posición específica
+void Mapa::setPuente(int y, int size) {
+    for (int x = 1; x < ancho - 1; x++) {
+        if (x < size || x >= ancho - size) {
             Object* obj = getObjectAt(x, y);
-            // Si quieres usar el sprite, necesitas un getter
-            // return obj && obj->getSprite() == '#';
-            // Como no existe getSprite, puedes comparar indirectamente:
-            // Si el objeto es de tipo Pared, entonces es pared
-            return obj && dynamic_cast<Pared*>(obj) != nullptr;
-        }
-
-        //Agregados 
-        void draw(){ //Función para dibujar el mapa
-            for (Object* obj : mapa){
-                obj->draw();
+            if (obj) {
+                // Remover el objeto del vector y liberar memoria
+                auto it = std::find(mapa.begin(), mapa.end(), obj);
+                if (it != mapa.end()) {
+                    delete *it;
+                    mapa.erase(it);
+                }
             }
-            mvprintw(alto, 0, "Score: %d   Vidas: %d", score, vidas);
         }
+    }
+}
 
-        void addScore(int puntos){ //Función para aumentar la puntuación 
-            score += puntos; 
+void Mapa::setXPuente(int x, int size) {
+    for (int y = 1; y < alto - 1; y++) {
+        if (y < size || y >= alto - size) {
+            Object* obj = getObjectAt(x, y);
+            if (obj) {
+                // Remover el objeto del vector y liberar memoria
+                auto it = std::find(mapa.begin(), mapa.end(), obj);
+                if (it != mapa.end()) {
+                    delete *it;
+                    mapa.erase(it);
+                }
+            }
         }
+    }
+}
 
-        void loseLife(){ //Función para perder una vida 
-            vidas--; 
-        } 
+void Mapa::setVerticalLine(int x, int startY, int endY) {
+    int ymin = std::max(1, startY);
+    int ymax = std::min(alto - 2, endY);
 
-        int getScore() const{ //Función para obtener la puntuación 
-            return score;
+    for (int y = ymin; y <= ymax; y++) {
+        // Verificar si ya existe un objeto en esa posición
+        Object* existing = getObjectAt(x, y);
+        if (!existing) {
+            // Si no existe, crear una nueva pared
+            mapa.push_back(new Pared(x, y));
+        } else {
+            // Si existe y no es pared, reemplazarlo
+            Pared* wall = dynamic_cast<Pared*>(existing);
+            if (!wall) {
+                // Remover el objeto existente y poner una pared
+                auto it = std::find(mapa.begin(), mapa.end(), existing);
+                if (it != mapa.end()) {
+                    delete *it;
+                    mapa.erase(it);
+                }
+                mapa.push_back(new Pared(x, y));
+            }
         }
+    }
+}
 
-        int getVidas() const{ //Función para obtener las vidas
-            return vidas;
+Object* Mapa::getObjectAt(int x, int y) {
+    for (Object* obj : mapa) {
+        if (obj && obj->getX() == x && obj->getY() == y) {
+            return obj;
         }
-};
+    }
+    return nullptr;
+}
+
+bool Mapa::isWall(int x, int y) {
+    Object* obj = getObjectAt(x, y);
+    return obj && dynamic_cast<Pared*>(obj) != nullptr;
+}
+
+void Mapa::clearArea(int x, int y) {
+    Object* obj = getObjectAt(x, y);
+    if (obj) {
+        auto it = std::find(mapa.begin(), mapa.end(), obj);
+        if (it != mapa.end()) {
+            delete *it;
+            mapa.erase(it);
+        }
+    }
+}
+
+// Getters
+int Mapa::getScore() const {
+    return score;
+}
+
+int Mapa::getVidas() const {
+    return vidas;
+}
+
+int Mapa::getAncho() const {
+    return ancho;
+}
+
+int Mapa::getAlto() const {
+    return alto;
+}
+
+// Setters
+void Mapa::setScore(int newScore) {
+    score = newScore;
+}
+
+void Mapa::setVidas(int newVidas) {
+    vidas = newVidas;
+}
+
+// Métodos de juego
+void Mapa::addScore(int puntos) {
+    score += puntos;
+}
+
+void Mapa::loseLife() {
+    if (vidas > 0) {
+        vidas--;
+    }
+}
+
+void Mapa::draw() {
+    // Dibujar todos los objetos del mapa
+    for (Object* obj : mapa) {
+        if (obj) {
+            obj->draw();
+        }
+    }
+
+    // Dibujar power-ups
+    for (PowerUp* power : powerups) {
+        if (power) {
+            power->draw();
+        }
+    }
+
+    // Mostrar información en la parte inferior
+    int maxY, maxX;
+    getmaxyx(stdscr, maxY, maxX);
+    mvprintw(maxY - 3, 0, "Score: %d", score);
+    mvprintw(maxY - 2, 0, "Vidas: %d", vidas);
+    mvprintw(maxY - 1, 0, "Dimensiones: %dx%d | Objetos: %zu",
+             ancho, alto, mapa.size());
+}

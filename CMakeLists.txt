@@ -22,6 +22,7 @@ add_executable(pacman ${SOURCES}
         headers/Punto.h
         src/Pared.cpp
         headers/Pared.h
+        headers/Mapa.h
 )
 
 target_link_libraries(pacman
