@@ -1,6 +1,6 @@
 #include <iostream>
 #include <ncurses.h>
-#include "ui.h" // Para usar las funciones drawMainMenu
+#include "./../headers/ui.h" // Para usar las funciones drawMainMenu
 #include <unistd.h> // Necesario para la función usleep()
 
 void gameLoop() {
@@ -21,7 +21,7 @@ void gameLoop() {
         refresh(); // Actualizando la pantalla para mostrar cambios
 
         // Pausa de 0.1 segundo para que el juego no corra muy rápido
-        usleep(100000)
+        usleep(100000);
     }
 
     nodelay(stdscr, FALSE);
@@ -42,12 +42,5 @@ int main() {
     }
 
     closeNcurses(); // Restauración de configuración original de la terminal
-
-    // Inicializar ncurses
-    initscr();
-    printw("PROYECTO 1 - MICROPROCESADORES");
-    refresh();
-    getch();
-    endwin();
     return 0;
 }

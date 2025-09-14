@@ -1,6 +1,6 @@
 /* Descripción del archivo: Lógica para dibujar las pantallas declaradas en ui.h con ncurses */
 
-#include "ui.h" // Inclusión de las declaraciones de las funciones
+#include "./../headers/ui.h" // Inclusión de las declaraciones de las funciones
 #include <vector> // Para std::vector en el menú
 #include <string> // Para std::string
 
