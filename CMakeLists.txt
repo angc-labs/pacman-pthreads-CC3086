@@ -18,6 +18,10 @@ add_executable(pacman ${SOURCES}
         headers/PowerUp.h
         src/Pacman.cpp
         headers/Pacman.h
+        src/Punto.cpp
+        headers/Punto.h
+        src/Pared.cpp
+        headers/Pared.h
 )
 
 target_link_libraries(pacman
