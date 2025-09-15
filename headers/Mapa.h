@@ -8,6 +8,10 @@
 #include <vector>
 #include "Object.h"
 #include "PowerUp.h"
+#include "Punto.h"
+#include "Pared.h"
+#include <cstdlib>
+#include <ctime>
 
 class Pared;
 class Punto;

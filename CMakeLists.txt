@@ -23,8 +23,6 @@ add_executable(pacman ${SOURCES}
         src/Pared.cpp
         headers/Pared.h
         headers/Mapa.h
-        src/GameManager.cpp
-        headers/GameManager.h
 )
 
 target_link_libraries(pacman

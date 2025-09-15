@@ -1,14 +1,20 @@
 #include <iostream>
 #include <ncurses.h>
 #include "./../headers/ui.h" // Para usar las funciones drawMainMenu
-#include "./../headers/GameManager.h"
+#include "./../headers/Mapa.h"
+#include "./../headers/Pacman.h"
+#include "./../headers/Punto.h"
 #include <unistd.h> // Necesario para la función usleep()
+#include <memory>
 
 void gameLoop() {
     int ch; // Almacena la tecla presionada
-
     nodelay(stdscr, TRUE);
 
+    Mapa mapa;
+    Pacman pacman(15, 10, mapa); // Posición inicial (x, y)
+    mapa.generarMapa();
+    mapa.setVerticalLine(50,10,20);
     while (true) {
         ch = getch(); // Intenta obtener una tecla. Devuelve ERR si no hay
 
@@ -18,11 +24,24 @@ void gameLoop() {
         }
 
         clear();
-    
-        refresh(); // Actualizando la pantalla para mostrar cambios
+        mapa.draw();
+        pacman.draw();
 
-        // Pausa de 0.1 segundo para que el juego no corra muy rápido
-        usleep(100000);
+        pacman.update();
+        int pacX = pacman.getX();
+        int pacY = pacman.getY();
+
+        Object* obj = mapa.getObjectAt(pacX, pacY);
+        if (obj && dynamic_cast<Punto*>(obj)) {
+            mapa.addScore(10);
+            mapa.clearArea(pacX, pacY);
+        } else if (obj && dynamic_cast<PowerUp*>(obj)) {
+            PowerUp* pu = dynamic_cast<PowerUp*>(obj);
+            pu->activarEfecto();
+            mapa.clearArea(pacX, pacY);
+        }
+        refresh();
+        usleep(10);
     }
 
     nodelay(stdscr, FALSE);
@@ -30,7 +49,6 @@ void gameLoop() {
 
 int main() {
     setupNcurses(); // Función auxiliar para configurar ncurses correctamente
-    GameManager manager;
     // Bucle principal que mantiene el programa en el menú
     while (true) {
         int menuChoice = drawMainMenu(); // Muestra el menú y espera elección de usuario

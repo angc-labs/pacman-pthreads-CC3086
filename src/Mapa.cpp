@@ -9,8 +9,11 @@
 #include "../headers/Mapa.h"
 #include "../headers/Pared.h"
 #include "../headers/Punto.h"
+#include "../headers/PowerUp.h"
 #include <ncurses.h>
 #include <algorithm>
+#include <cstdlib>
+#include <ctime>
 
 Mapa::Mapa() : score(0), vidas(3) {
     // Obtener dimensiones automáticamente
@@ -47,12 +50,18 @@ void Mapa::generarMapa() {
             if (y == 0 || y == alto - 1 || x == 0 || x == ancho - 1) {
                 // Paredes en los bordes
                 mapa.push_back(new Pared(x, y));
-            } else if (x % 4 == 0 && y % 2 == 0 && x < ancho - 4 && y < alto - 4) {
+            } else if (x < ancho - 1 && y < alto-1) {
                 // Algunos puntos esparcidos (no llenar toda la pantalla)
                 mapa.push_back(new Punto(x, y));
             }
         }
     }
+    for (int i=0; i < 6; i++) {
+        int x = rand() % (ancho - 2) + 1;
+        int y = rand() % (alto - 2) + 1;
+        mapa.push_back(new PowerUp(x, y, "+10"));
+    }
+
 }
 
 void Mapa::setPuente(int y, int size) {
