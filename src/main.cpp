@@ -7,12 +7,21 @@
 #include <unistd.h> // Necesario para la función usleep()
 #include <memory>
 
+#include "../headers/Ghost.h"
+
 void gameLoop() {
     int ch; // Almacena la tecla presionada
     nodelay(stdscr, TRUE);
 
     Mapa mapa;
+    std::vector<Ghost*> fantasmas = {
+        new Ghost(15, 10, "1", mapa),
+        new Ghost(15, 11, "2", mapa),
+        new Ghost(15, 12, "3", mapa)
+    };
     Pacman pacman(15, 10, mapa);
+
+
     mapa.generarMapa();
     mapa.setVerticalLine(0.2 * mapa.getAncho(),0.5*mapa.getAlto(),mapa.getAlto());
     mapa.setHorizontalLine(0.5 * mapa.getAlto(),0.2*mapa.getAncho(),0.9*mapa.getAncho());
@@ -29,6 +38,11 @@ void gameLoop() {
         pacman.draw();
 
         pacman.update();
+        for (const auto& fantasma : fantasmas) {
+            fantasma->draw();
+            fantasma->update();
+        }
+
         int pacX = pacman.getX();
         int pacY = pacman.getY();
 
@@ -40,6 +54,20 @@ void gameLoop() {
             PowerUp* pu = dynamic_cast<PowerUp*>(obj);
             pu->activarEfecto();
             mapa.clearArea(pacX, pacY);
+        }
+
+        for (const auto& fantasma : fantasmas) {
+            if (fantasma && fantasma->getX() == pacX && fantasma->getY() == pacY) {
+                mapa.loseLife();
+                if (mapa.getVidas() <= 0) {
+                    // game over
+                } else {
+                    // Resetear posiciones
+                    int centerX = mapa.getAncho() / 2;
+                    int centerY = mapa.getAlto() / 2;
+                    pacman.setPos(centerX, centerY);
+                }
+            }
         }
         refresh();
         usleep(5);

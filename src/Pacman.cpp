@@ -6,8 +6,8 @@
 #include "../headers/Pacman.h"
 #include <ncurses.h>
 
-Pacman::Pacman(int x, int y, Mapa& map)
-    : Object(x, y, 'C'),
+Pacman::Pacman(int x, int y, Mapa& map) :
+    Object(x, y, 'C'),
     velocidad(1),
     lastKey(0),
     mapa(map),
