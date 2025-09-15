@@ -14,6 +14,8 @@
 #include <algorithm>
 #include <cstdlib>
 #include <ctime>
+#include <iostream>
+#include <bits/ostream.tcc>
 
 Mapa::Mapa() : score(0), vidas(3) {
     // Obtener dimensiones automáticamente
@@ -99,8 +101,34 @@ void Mapa::setXPuente(int x, int size) {
 void Mapa::setVerticalLine(int x, int startY, int endY) {
     int ymin = std::max(1, startY);
     int ymax = std::min(alto - 2, endY);
-
     for (int y = ymin; y <= ymax; y++) {
+        // Verificar si ya existe un objeto en esa posición
+        Object* existing = getObjectAt(x, y);
+        if (!existing) {
+            // Si no existe, crear una nueva pared
+            mapa.push_back(new Pared(x, y));
+        } else {
+            // Si existe y no es pared, reemplazarlo
+            Pared* wall = dynamic_cast<Pared*>(existing);
+            if (!wall) {
+                // Remover el objeto existente y poner una pared
+                auto it = std::find(mapa.begin(), mapa.end(), existing);
+                if (it != mapa.end()) {
+                    delete *it;
+                    mapa.erase(it);
+                }
+                mapa.push_back(new Pared(x, y));
+            }
+        }
+    }
+}
+
+
+void Mapa::setHorizontalLine(int y, int startX, int endX) {
+    int xmin = std::max(1, startX);
+    int xmax = std::min(ancho - 2, endX);
+
+    for (int x = xmin; x <= xmax; x++) {
         // Verificar si ya existe un objeto en esa posición
         Object* existing = getObjectAt(x, y);
         if (!existing) {
@@ -204,6 +232,6 @@ void Mapa::draw() {
     getmaxyx(stdscr, maxY, maxX);
     mvprintw(maxY - 3, 0, "Score: %d", score);
     mvprintw(maxY - 2, 0, "Vidas: %d", vidas);
-    mvprintw(maxY - 1, 0, "Dimensiones: %dx%d | Objetos: %zu",
-             ancho, alto, mapa.size());
+    mvprintw(maxY - 1, 0, "Dimensiones: %dx%d | Objetos: %zu", ancho, alto, mapa.size());
+    mvprintw(maxY-3, maxX-12, "Q para salir");
 }

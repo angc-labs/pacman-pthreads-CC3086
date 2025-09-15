@@ -30,6 +30,7 @@ public:
     void setPuente(int y, int size);
     void setXPuente(int x, int size);
     void setVerticalLine(int x, int startY, int endY);
+    void setHorizontalLine(int y, int startX, int endX);
     Object* getObjectAt(int x, int y);
     bool isWall(int x, int y);
 

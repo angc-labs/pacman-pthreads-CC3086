@@ -12,9 +12,10 @@ void gameLoop() {
     nodelay(stdscr, TRUE);
 
     Mapa mapa;
-    Pacman pacman(15, 10, mapa); // Posición inicial (x, y)
+    Pacman pacman(15, 10, mapa);
     mapa.generarMapa();
-    mapa.setVerticalLine(50,10,20);
+    mapa.setVerticalLine(0.2 * mapa.getAncho(),0.5*mapa.getAlto(),mapa.getAlto());
+    mapa.setHorizontalLine(0.5 * mapa.getAlto(),0.2*mapa.getAncho(),0.9*mapa.getAncho());
     while (true) {
         ch = getch(); // Intenta obtener una tecla. Devuelve ERR si no hay
 
@@ -41,7 +42,7 @@ void gameLoop() {
             mapa.clearArea(pacX, pacY);
         }
         refresh();
-        usleep(10);
+        usleep(5);
     }
 
     nodelay(stdscr, FALSE);
