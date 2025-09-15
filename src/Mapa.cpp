@@ -43,6 +43,7 @@ void Mapa::generarMapa() {
     for (PowerUp* power : powerups) {
         delete power;
     }
+
     mapa.clear();
     powerups.clear();
 
@@ -63,7 +64,6 @@ void Mapa::generarMapa() {
         int y = rand() % (alto - 2) + 1;
         mapa.push_back(new PowerUp(x, y, "+10"));
     }
-
 }
 
 void Mapa::setPuente(int y, int size) {

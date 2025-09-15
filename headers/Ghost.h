@@ -28,12 +28,12 @@ public:
     Ghost(int x, int y, std::string t, Mapa& mapa);
     void setEstado(const std::string& nuevoEstado);
     void respawn();
-    void update() override;
+    void update(const std::vector<Ghost*>& ghosts);
     std::string getEstado() const;
     std::string getTipo() const;
 
 private:
-    bool checkCollision(int tempX, int tempY) const;
+    bool checkCollision(int tempX, int tempY, const std::vector<Ghost*>& ghosts) const;
     void move();
     bool shouldMoveThisFrame();
 

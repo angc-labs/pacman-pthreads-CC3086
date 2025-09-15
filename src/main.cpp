@@ -40,7 +40,7 @@ void gameLoop() {
         pacman.update();
         for (const auto& fantasma : fantasmas) {
             fantasma->draw();
-            fantasma->update();
+            fantasma->update(fantasmas);
         }
 
         int pacX = pacman.getX();

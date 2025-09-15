@@ -29,18 +29,24 @@ void Ghost::move() {
     }
 }
 
-bool Ghost::checkCollision(int tempX, int tempY) const {
-    return (
-        tempX <= 0 ||
-        tempX >= mapa.getAncho() - 1 ||
-        tempY <= 0 ||
-        tempY >= mapa.getAlto() - 1 ||
-        mapa.isWall(tempX, tempY)
-        );
+bool Ghost::checkCollision(int tempX, int tempY, const std::vector<Ghost*>& ghosts) const {
+    if (mapa.isWall(tempX, tempY)) {
+        return true;
+    }
+
+    for (const auto& fantasma : ghosts) {
+        if (fantasma && fantasma != this &&
+            fantasma->getX() == tempX && fantasma->getY() == tempY) {
+            return true;
+            }
+    }
+
+    return false;
 }
 
 bool Ghost::shouldMoveThisFrame() {
-    // mover en frame si framecounter es mayor que el delay
+    // mover en frame si framecounter
+    // es mayor que el delay
     frameCounter++;
     frameCounterDirection++;
 
@@ -51,24 +57,25 @@ bool Ghost::shouldMoveThisFrame() {
     return false;
 }
 
-void Ghost::update() {
+void Ghost::update(const std::vector<Ghost*>& ghosts) {
     if (!shouldMoveThisFrame()) {
         return;
     }
-
     move();
-
     int tempX = x;
     int tempY = y;
 
-    switch(direction) {
-        case 0: tempY -= velocidad; break; // UP
-        case 1: tempY += velocidad; break; // DOWN
-        case 2: tempX -= velocidad; break; // LEFT
-        case 3: tempX += velocidad; break; // RIGHT
+    if (direction == 0) {
+        tempY -= velocidad;
+    } else if (direction == 1) {
+        tempY += velocidad;
+    } else if (direction == 2) {
+        tempX -= velocidad;
+    } else if (direction == 3) {
+        tempX += velocidad;
     }
 
-    if (!checkCollision(tempX, tempY)) {
+    if (!checkCollision(tempX, tempY, ghosts)) {
         x = tempX;
         y = tempY;
     }
@@ -78,7 +85,7 @@ void Ghost::setEstado(const std::string& nuevoEstado) {
 }
 
 void Ghost::respawn() {
-    // Implementar reaparición
+    // respawn
     estado = "normal";
 }
 
