@@ -1,6 +1,7 @@
 #include <iostream>
 #include <ncurses.h>
 #include "./../headers/ui.h" // Para usar las funciones drawMainMenu
+#include "./../headers/GameManager.h"
 #include <unistd.h> // Necesario para la función usleep()
 
 void gameLoop() {
@@ -29,7 +30,7 @@ void gameLoop() {
 
 int main() {
     setupNcurses(); // Función auxiliar para configurar ncurses correctamente
-
+    GameManager manager;
     // Bucle principal que mantiene el programa en el menú
     while (true) {
         int menuChoice = drawMainMenu(); // Muestra el menú y espera elección de usuario

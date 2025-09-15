@@ -1,7 +1,8 @@
 #ifndef UI_H
 #define UI_H
 
-#include <ncurses.h>
+#include <locale.h>
+#include <ncursesw/ncurses.h>
 #include <string>
 #include <vector>
 

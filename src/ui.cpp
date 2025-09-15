@@ -45,7 +45,7 @@ int drawMainMenu() {
 
         // Dibujo del título del juego
         attron(COLOR_PAIR(1) | A_BOLD);
-        print_centered(5, "P A C - M A N");
+        print_centered(5, "P A C - M A N 🤓");
         print_centered(6, "===============");
         attroff(COLOR_PAIR(1) | A_BOLD);
 
