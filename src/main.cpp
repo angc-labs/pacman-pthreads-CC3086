@@ -5,12 +5,14 @@
 #include "./../headers/Pacman.h"
 #include "./../headers/Punto.h"
 #include <unistd.h> // Necesario para la función usleep()
+#include <vector>
 #include <memory>
-
 #include "../headers/Ghost.h"
 
+std::vector<int> puntajes;
+
 void gameLoop() {
-    int ch; // Almacena la tecla presionada
+    int ch;
     nodelay(stdscr, TRUE);
 
     Mapa mapa;
@@ -25,13 +27,8 @@ void gameLoop() {
     mapa.generarMapa();
     mapa.setVerticalLine(0.2 * mapa.getAncho(),0.5*mapa.getAlto(),mapa.getAlto());
     mapa.setHorizontalLine(0.5 * mapa.getAlto(),0.2*mapa.getAncho(),0.9*mapa.getAncho());
-    while (true) {
+    while (ch != 'q' && ch != 'Q') {
         ch = getch(); // Intenta obtener una tecla. Devuelve ERR si no hay
-
-        // Si se presiona 'q', sale del bucle del juego
-        if (ch == 'q' || ch == 'Q'){
-            break;
-        }
 
         clear();
         mapa.draw();
@@ -61,6 +58,9 @@ void gameLoop() {
                 mapa.loseLife();
                 if (mapa.getVidas() <= 0) {
                     // game over
+                    refresh();
+                    ch = 'q';
+                    puntajes.push_back(mapa.getScore());
                 } else {
                     // Resetear posiciones
                     int centerX = mapa.getAncho() / 2;
@@ -72,7 +72,10 @@ void gameLoop() {
         refresh();
         usleep(5);
     }
-
+    for (auto& fantasma : fantasmas) {
+        delete fantasma;
+    }
+    fantasmas.clear();
     nodelay(stdscr, FALSE);
 }
 
@@ -89,6 +92,6 @@ int main() {
         }
     }
 
-    closeNcurses(); // Restauración de configuración original de la terminal
+    closeNcurses();
     return 0;
 }
