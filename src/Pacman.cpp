@@ -6,33 +6,91 @@
 #include "../headers/Pacman.h"
 #include <ncurses.h>
 
-// contructor
-Pacman::Pacman(int x, int y) : Object(x, y, 'C'), velocidad(1) {}
+Pacman::Pacman(int x, int y, Mapa& map)
+    : Object(x, y, 'C'),
+    velocidad(1),
+    lastKey(0),
+    mapa(map),
+    frameCounter(0),
+    moveDelay(500) {}
 
 void Pacman::moveInput() {
     int key = getch();
-
-    if (key == KEY_UP) {
-        y -= velocidad;
-    } else if (key == KEY_DOWN) {
-        y += velocidad;
-    } else if (key == KEY_LEFT) {
-        x -= velocidad;
-    } else if (key == KEY_RIGHT) {
-        x += velocidad;
+    if (key != ERR) {
+        lastKey = key;
     }
 }
 
-void Pacman::checkCollision() {
-    // HINT: condicional para las colisiones
+bool Pacman::checkCollision(int tempX, int tempY) const {
+    return (
+        tempX <= 0 ||
+        tempX >= mapa.getAncho() - 1 ||
+        tempY <= 0 ||
+        tempY >= mapa.getAlto() - 1 ||
+        mapa.isWall(tempX, tempY)
+        );
 }
-// actualizar posicion
+
+bool Pacman::shouldMoveThisFrame() {
+    // mover en trame si framecounter es mayor que el delay
+    // mover si hay una tecla presionada
+    frameCounter++;
+
+    int currentKey = getch();
+    if (currentKey != ERR && currentKey != lastKey) {
+        ungetch(currentKey);
+        return true;
+    }
+
+    if (frameCounter >= moveDelay) {
+        frameCounter = 0;
+        return true;
+    }
+    return false;
+}
+
 void Pacman::update() {
+    if (!shouldMoveThisFrame()) {
+        return;
+    }
+
     moveInput();
-    checkCollision();
-    // siguiente posicion
+    if (lastKey == 0) {
+        return;
+    }
+
+    // posicion basada en lastKey
+    int tempX = x;
+    int tempY = y;
+
+    if (lastKey == KEY_UP) {
+        tempY -= velocidad;
+    } else if (lastKey == KEY_DOWN) {
+        tempY += velocidad;
+    } else if (lastKey == KEY_LEFT) {
+        tempX -= velocidad;
+    } else if (lastKey == KEY_RIGHT) {
+        tempX += velocidad;
+    }
+
+    if (!checkCollision(tempX, tempY)) {
+        x = tempX;
+        y = tempY;
+    }
 }
-// getters
+
 int Pacman::getVelocidad() const {
     return velocidad;
+}
+
+int Pacman::getLastKey() const {
+    return lastKey;
+}
+
+void Pacman::setMoveDelay(int delay) {
+    if (delay > 0) {
+        moveDelay = delay;
+    } else {
+        moveDelay = 1;
+    }
 }

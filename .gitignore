@@ -3,6 +3,8 @@
 /bin/
 cmake-build-debug
 
+.clang-tidy
+
 CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake
