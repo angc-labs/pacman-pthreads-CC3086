@@ -12,5 +12,5 @@ chmod +x setup-ubuntu.sh
 2. Compilación 
 
 ```bash
-cmake --build bin
+cmake --build build
 ```
