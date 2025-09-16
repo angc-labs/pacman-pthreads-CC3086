@@ -13,6 +13,9 @@ int drawMainMenu();
 // Función auxiliar para inicializar la configuración de ncurses.
 void setupNcurses();
 
+// Función para dibujar la pantalla de instrucciones.
+void drawInstructions();
+
 // Función auxiliar para cerrar ncurses.
 void closeNcurses();
 
