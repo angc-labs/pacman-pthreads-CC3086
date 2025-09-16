@@ -7,20 +7,24 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../bin)
 
 # conan
 find_package(Curses REQUIRED)
-include_directories(${CURSES_INCLUDE_DIR})
 
 # ejecutable
 file(GLOB SOURCES "src/*.cpp" "src/other/*.cpp")
 add_executable(pacman ${SOURCES}
+        src/main.cpp
         src/Object.cpp
-        headers/Object.h
         src/PowerUp.cpp
-        headers/PowerUp.h
         src/Pacman.cpp
-        headers/Pacman.h
+        src/ui.cpp
+        src/highscore.cpp
 )
 
 target_link_libraries(pacman
     PRIVATE
     ${CURSES_LIBRARIES}
+)
+
+target_include_directories(pacman
+    PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/headers
 )
