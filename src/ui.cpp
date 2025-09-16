@@ -36,7 +36,7 @@ void closeNcurses() {
         * Flechas 
         * Enter para seleccionar */
 int drawMainMenu() {
-    std::vector<std::string> options = {"Iniciar Juego", "Salir"};
+    std::vector<std::string> options = {"Iniciar Juego","Instrucciones", "Salir"};
     int choice = 0;
     int key;
 
@@ -79,4 +79,66 @@ int drawMainMenu() {
                 return choice; // Devuelve 0 o 1
         }
     }
+}
+
+/*
+* Dibujar la pantalla de instrucciones - Version simplificada
+*/
+void drawInstructions() {
+    clear();
+    
+    // Encabezado de instrucciones
+    attron(COLOR_PAIR(1) | A_BOLD);
+    print_centered(3, "INSTRUCCIONES DEL JUEGO");
+    print_centered(4, "=======================");
+    attroff(COLOR_PAIR(1) | A_BOLD);
+
+    // Instrucciones del juego
+    std::vector<std::string> instructions = {
+        "OBJETIVO:",
+        " - Comer todos los puntos del laberinto",
+        " - Evitar a los fantasmas que te persiguen",
+        " - Usar power-ups para ventajas temporales",
+        "",
+        "CONTROLES:",
+        " - Flechas: Mover a Pac-Man (arriba, abajo, izquierda, derecha)",
+        " - WASD: Movimiento alternativo",
+        " - P: Pausar/Reanudar juego",
+        " - Q: Salir al menu principal",
+        "",
+        "ELEMENTOS:",
+        " - C: Pac-Man (jugador)",
+        " - G: Fantasmas (enemigos)",
+        " - .: Puntos (10 puntos cada uno)",
+        " - P: Power-ups (efectos especiales)",
+        " - #: Paredes (obstaculos)",
+        "",
+        "VIDAS:",
+        " - Comienzas con 3 vidas",
+        " - Pierdes 1 vida si un fantasma te atrapa",
+        "",
+        "Presiona cualquier tecla para volver al menu principal"
+    };
+
+    // Dibujar instrucciones
+    for (size_t i = 0; i < instructions.size(); ++i) {
+        if (instructions[i] == "OBJETIVO:" || 
+            instructions[i] == "CONTROLES:" || 
+            instructions[i] == "ELEMENTOS:" || 
+            instructions[i] == "VIDAS:") {
+            attron(COLOR_PAIR(1) | A_BOLD);
+        }
+        
+        print_centered(6 + i, instructions[i]);
+        
+        if (instructions[i] == "OBJETIVO:" || 
+            instructions[i] == "CONTROLES:" || 
+            instructions[i] == "ELEMENTOS:" || 
+            instructions[i] == "VIDAS:") {
+            attroff(COLOR_PAIR(1) | A_BOLD);
+        }
+    }
+
+    refresh();
+    getch(); // Esperar a que el usuario presione una tecla
 }

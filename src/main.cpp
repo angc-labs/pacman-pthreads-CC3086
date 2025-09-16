@@ -87,6 +87,8 @@ int main() {
 
         if (menuChoice == 0) { // Opción de "Iniciar Juego"
             gameLoop(); // Lanzamiento del bucle del juego
+        } else if (menuChoice == 1) { // Opción de "Instrucciones"
+            drawInstructions(); // Mostrar instrucciones
         } else { // Opción de "Salir"
             break; // Termina el programa
         }
