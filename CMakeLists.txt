@@ -13,19 +13,18 @@ include_directories(${CURSES_INCLUDE_DIR})
 file(GLOB SOURCES "src/*.cpp" "src/other/*.cpp")
 add_executable(pacman ${SOURCES}
         src/Object.cpp
-        headers/Object.h
         src/PowerUp.cpp
-        headers/PowerUp.h
         src/Pacman.cpp
-        headers/Pacman.h
         src/Punto.cpp
-        headers/Punto.h
         src/Pared.cpp
-        headers/Pared.h
-        headers/Mapa.h
 )
 
 target_link_libraries(pacman
     PRIVATE
     ${CURSES_LIBRARIES}
+)
+
+target_include_directories(pacman
+    PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/headers
 )

@@ -19,4 +19,13 @@ void drawInstructions();
 // Función auxiliar para cerrar ncurses.
 void closeNcurses();
 
+// Dibuja el contenido de la pantalla de puntajes
+void display_highscore_screen();
+
+// Maneja la pantalla de fin de juego y guardado de puntaje
+void handle_end_of_game(int final_score);
+
+// Para validación de la extensión de caracteres del nombre
+std::string getPlayerName(); 
+
 #endif // UI_H
