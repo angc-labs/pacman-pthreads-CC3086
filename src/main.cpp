@@ -13,7 +13,6 @@ std::vector<int> puntajes;
 
 int gameLoop() {
     int ch;
-    int score =0;
 
     nodelay(stdscr, TRUE);
 
@@ -79,7 +78,7 @@ int gameLoop() {
     }
     fantasmas.clear();
     nodelay(stdscr, FALSE);
-    return score; // Devolución de puntaje final
+    return mapa.getScore(); // Devolución de puntaje final
 }
 
 int main() {

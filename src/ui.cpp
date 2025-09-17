@@ -209,7 +209,7 @@ void handle_end_of_game(int final_score) {
     std::string playerName = getPlayerName(); 
 
     // Guardando el puntaje junto al nombre validado
-    save_score(player_name, final_score);
+    save_score(playerName, final_score);
 
     mvprintw(18, 10, "Puntaje guardado. Presiona una tecla para continuar...");
     refresh();
