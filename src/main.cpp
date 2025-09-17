@@ -1,18 +1,20 @@
 #include <iostream>
 #include <ncurses.h>
-#include "./../headers/ui.h" // Para usar las funciones drawMainMenu
-#include "./../headers/Mapa.h"
-#include "./../headers/Pacman.h"
-#include "./../headers/Punto.h"
+#include "ui.h" // Para usar las funciones drawMainMenu
+#include "Mapa.h"
+#include "Pacman.h"
+#include "Punto.h"
 #include <unistd.h> // Necesario para la función usleep()
 #include <vector>
 #include <memory>
-#include "../headers/Ghost.h"
+#include "Ghost.h"
 
 std::vector<int> puntajes;
 
-void gameLoop() {
+int gameLoop() {
     int ch;
+    int score =0;
+
     nodelay(stdscr, TRUE);
 
     Mapa mapa;
@@ -77,6 +79,7 @@ void gameLoop() {
     }
     fantasmas.clear();
     nodelay(stdscr, FALSE);
+    return score; // Devolución de puntaje final
 }
 
 int main() {
@@ -86,10 +89,13 @@ int main() {
         int menuChoice = drawMainMenu(); // Muestra el menú y espera elección de usuario
 
         if (menuChoice == 0) { // Opción de "Iniciar Juego"
-            gameLoop(); // Lanzamiento del bucle del juego
+            int final_score = gameLoop(); // Lanzamiento del bucle del juego
+            handle_end_of_game(final_score);// Llamada a función para guardar puntaje
         } else if (menuChoice == 1) { // Opción de "Instrucciones"
             drawInstructions(); // Mostrar instrucciones
-        } else { // Opción de "Salir"
+        } else if (menuChoice == 2) { // Opción de "Ver Puntajes"
+            display_highscore_screen();
+        }else if (menuChoice == 3) { // Opción de "Salir"
             break; // Termina el programa
         }
     }
