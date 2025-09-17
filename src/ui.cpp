@@ -104,7 +104,6 @@ void drawInstructions() {
         "",
         "CONTROLES:",
         " - Flechas: Mover a Pac-Man (arriba, abajo, izquierda, derecha)",
-        " - WASD: Movimiento alternativo",
         " - P: Pausar/Reanudar juego",
         " - Q: Salir al menu principal",
         "",

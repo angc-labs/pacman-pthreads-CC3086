@@ -20,6 +20,6 @@ conan_data/
 *.conan
 build/conaninfo.txt
 build/conanbuildinfo.cmake
-
+venv
 .vscode/
 *.exe

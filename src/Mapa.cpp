@@ -17,7 +17,7 @@
 #include <iostream>
 #include <bits/ostream.tcc>
 
-Mapa::Mapa() : score(0), vidas(3) {
+Mapa::Mapa() : score(0), vidas(4) {
     // Obtener dimensiones automáticamente
     int maxY, maxX;
     getmaxyx(stdscr, maxY, maxX);
