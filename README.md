@@ -13,4 +13,5 @@ chmod +x setup-ubuntu.sh
 
 ```bash
 cmake --build build
+./bin/pacman
 ```
