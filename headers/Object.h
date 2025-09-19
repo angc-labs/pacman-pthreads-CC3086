@@ -8,9 +8,9 @@
 class Object {
 protected:
     int x, y;
-    char sprite;
 
 public:
+    char sprite;
     // contructor
     Object(int x = 0, int y = 0, char sprite = ' ');
     virtual ~Object();

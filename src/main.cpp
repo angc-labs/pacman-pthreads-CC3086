@@ -31,18 +31,38 @@ int gameLoop() {
     while (ch != 'q' && ch != 'Q') {
         ch = getch(); // Intenta obtener una tecla. Devuelve ERR si no hay
 
-        clear();
         mapa.draw();
         pacman.draw();
 
+        int oldpacX = pacman.getX();
+        int oldpacY = pacman.getY();
+
         pacman.update();
         for (const auto& fantasma : fantasmas) {
+            int oldfantasmaX = fantasma->getX();
+            int oldfantasmaY = fantasma->getY();
+
             fantasma->draw();
             fantasma->update(fantasmas);
+
+            if (oldfantasmaX != fantasma->getX() || oldfantasmaY != fantasma->getY()) {
+                Object* prevObj = mapa.getObjectAt(oldfantasmaX, oldfantasmaY);
+                char prevSprite = (prevObj ? prevObj->sprite : ' ');
+                // (y, x) = (fila, columna)
+                mvaddch(oldfantasmaY, oldfantasmaX, prevSprite);
+            }
         }
 
         int pacX = pacman.getX();
         int pacY = pacman.getY();
+
+        if (oldpacX != pacX || oldpacY != pacY) {
+            Object* prevObj = mapa.getObjectAt(oldpacX, oldpacY);
+            char prevSprite = (prevObj ? prevObj->sprite : ' ');
+
+            // (y, x) = (fila, columna)
+            mvaddch(oldpacY, oldpacX, prevSprite);
+        }
 
         Object* obj = mapa.getObjectAt(pacX, pacY);
         if (obj && dynamic_cast<Punto*>(obj)) {
@@ -70,15 +90,15 @@ int gameLoop() {
                 }
             }
         }
+
         refresh();
-        usleep(5);
     }
     for (auto& fantasma : fantasmas) {
         delete fantasma;
     }
     fantasmas.clear();
     nodelay(stdscr, FALSE);
-    return mapa.getScore(); // Devolución de puntaje final
+    return mapa.getScore();
 }
 
 int main() {
