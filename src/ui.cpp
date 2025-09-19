@@ -187,7 +187,7 @@ void display_highscore_screen() {
         refresh(); // Actualización de la pantalla para mostrar lo dibujado
         input = getch(); // Esperando a que el usuario presione una tecla
 
-        if (input == 'q') break;
+        if (input == 'q' || input == 'Q') break;
         
         if (input == 'm' && scores_to_show < total_scores) {
             scores_to_show += 10;
