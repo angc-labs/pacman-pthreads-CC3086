@@ -79,12 +79,13 @@ void Mapa::generarMapa() {
     // Generar power-ups en posiciones aleatorias
     srand(time(nullptr));
     for (int i = 0; i < 6; i++) {
-        int x = rand() % (ancho - 2) + 1;
-        int y = rand() % (alto - 2) + 1;
+        int x = rand() % (ancho - 3) + 1;
+        int y = rand() % (alto - 3) + 1;
 
         // verificar que no haya ya un objeto en esa posición
         if (mapa[y][x] != nullptr) {
-            delete mapa[y][x];
+            mapa[y][x]=nullptr;
+            mapa[y][x+1]=nullptr;
         }
         mapa[y][x] = new PowerUp(x, y, "+10");
     }
