@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.25)
 project(pacman-pthreads-CC3086)
 
+set(CURSES_NEED_WIDE TRUE)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../bin)
@@ -21,7 +22,7 @@ add_executable(pacman ${SOURCES}
 
 target_link_libraries(pacman
     PRIVATE
-    ${CURSES_LIBRARIES}
+        ncursesw
 )
 
 target_include_directories(pacman

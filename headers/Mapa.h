@@ -18,7 +18,7 @@ class Punto;
 
 class Mapa {
 private:
-    std::vector<Object*> mapa;        // Vector para almacenar punteros a objetos
+    std::vector<std::vector<Object*>> mapa;        // Vector para almacenar punteros a objetos
     int score, vidas, ancho, alto;    // Puntuación, vidas, dimensiones del mapa
     std::vector<PowerUp*> powerups;   // Vector para almacenar power-ups
 

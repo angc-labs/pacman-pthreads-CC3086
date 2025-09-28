@@ -1,9 +1,14 @@
 /* Descripción del archivo: Lógica para dibujar las pantallas declaradas en ui.h con ncurses */
+#define _XOPEN_SOURCE_EXTENDED
 
-#include "ui.h" // Inclusión de las declaraciones de las funciones
-#include <vector> // Para std::vector en el menú
-#include <string> // Para std::string
-#include <ncurses.h>
+#include <cwchar>
+#include <codecvt>
+
+#include "ui.h"
+#include <vector>
+#include <string>
+#include <locale.h>
+#include <ncursesw/curses.h>
 #include "highscore.h" // Para incluir las declaraciones de las funciones
 
 // DECLARACIÓN DE FUNCIONES AUXILIARES ESENCIALES
@@ -16,6 +21,7 @@ void print_centered(int starty, const std::string& text) {
 
 // Configuración e inicialización de la terminal para usar ncurses
 void setupNcurses() {
+    setlocale(LC_ALL, "en_US.UTF-8");
     initscr();            // Inicialización de ncurses
     noecho();             // No mostrar las teclas presionadas
     cbreak();             // Procesamiento de entrada inmediato
@@ -25,6 +31,7 @@ void setupNcurses() {
     // Definición de pares de colores (ID, color de texto, color de fondo)
     init_pair(1, COLOR_YELLOW, COLOR_BLACK); // Para Pac-Man y texto
     init_pair(2, COLOR_WHITE, COLOR_BLACK);  // Para texto normal
+    init_pair(3, COLOR_BLUE, COLOR_BLACK);
 }
 
 // Restauración de la terminal (estado normal) al cerrar programa
@@ -62,7 +69,7 @@ int drawMainMenu() {
             }
         }
         
-        print_centered(15, "Usa las flechas para navegar y Enter para seleccionar");
+        print_centered(15, "\t   Usa las flechas ⬆ ⬇ ️para navegar y Enter para seleccionar");
 
         refresh();
 

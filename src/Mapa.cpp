@@ -23,140 +23,135 @@ Mapa::Mapa() : score(0), vidas(4) {
     getmaxyx(stdscr, maxY, maxX);
     ancho = maxX;
     alto = maxY - 3;  // Reservar 3 líneas para información
+
+    // Inicializar el mapa como matriz anidada
+    mapa.resize(alto);
+    for (int y = 0; y < alto; y++) {
+        mapa[y].resize(ancho, nullptr);
+    }
 }
 
 Mapa::~Mapa() {
-    // Liberar memoria de todos los objetos
-    for (Object* obj : mapa) {
-        delete obj;
+    for (int y = 0; y < alto; y++) {
+        for (int x = 0; x < ancho; x++) {
+            if (mapa[y][x] != nullptr) {
+                delete mapa[y][x];
+                mapa[y][x] = nullptr;
+            }
+        }
     }
+
+    // Liberar power-ups
     for (PowerUp* power : powerups) {
         delete power;
     }
+    powerups.clear();
 }
 
 void Mapa::generarMapa() {
-    // Limpiar vectores existentes
-    for (Object* obj : mapa) {
-        delete obj;
+    for (int y = 0; y < alto; y++) {
+        for (int x = 0; x < ancho; x++) {
+            if (mapa[y][x] != nullptr) {
+                delete mapa[y][x];
+                mapa[y][x] = nullptr;
+            }
+        }
     }
+
+    // Limpiar power-ups
     for (PowerUp* power : powerups) {
         delete power;
     }
-
-    mapa.clear();
     powerups.clear();
 
-    // Generar solo las paredes del borde y algunos puntos
+    // paredes del borde y algunos puntos
     for (int y = 0; y < alto; y++) {
         for (int x = 0; x < ancho; x++) {
             if (y == 0 || y == alto - 1 || x == 0 || x == ancho - 1) {
                 // Paredes en los bordes
-                mapa.push_back(new Pared(x, y));
-            } else if (x < ancho - 1 && y < alto-1) {
-                // Algunos puntos esparcidos (no llenar toda la pantalla)
-                mapa.push_back(new Punto(x, y));
+                mapa[y][x] = new Pared(x, y);
+            } else if (x < ancho - 1 && y < alto - 1 && x < ancho - 2) {
+                mapa[y][x] = new Punto(x, y);
             }
         }
     }
-    for (int i=0; i < 6; i++) {
+
+    // Generar power-ups en posiciones aleatorias
+    srand(time(nullptr));
+    for (int i = 0; i < 6; i++) {
         int x = rand() % (ancho - 2) + 1;
         int y = rand() % (alto - 2) + 1;
-        mapa.push_back(new PowerUp(x, y, "+10"));
+
+        // verificar que no haya ya un objeto en esa posición
+        if (mapa[y][x] != nullptr) {
+            delete mapa[y][x];
+        }
+        mapa[y][x] = new PowerUp(x, y, "+10");
     }
 }
 
 void Mapa::setPuente(int y, int size) {
+    if (y < 0 || y >= alto) return;
+
     for (int x = 1; x < ancho - 1; x++) {
         if (x < size || x >= ancho - size) {
-            Object* obj = getObjectAt(x, y);
-            if (obj) {
-                // Remover el objeto del vector y liberar memoria
-                auto it = std::find(mapa.begin(), mapa.end(), obj);
-                if (it != mapa.end()) {
-                    delete *it;
-                    mapa.erase(it);
-                }
+            if (mapa[y][x] != nullptr) {
+                delete mapa[y][x];
+                mapa[y][x] = nullptr;
             }
         }
     }
 }
 
 void Mapa::setXPuente(int x, int size) {
+    if (x < 0 || x >= ancho) return;
+
     for (int y = 1; y < alto - 1; y++) {
         if (y < size || y >= alto - size) {
-            Object* obj = getObjectAt(x, y);
-            if (obj) {
-                // Remover el objeto del vector y liberar memoria
-                auto it = std::find(mapa.begin(), mapa.end(), obj);
-                if (it != mapa.end()) {
-                    delete *it;
-                    mapa.erase(it);
-                }
+            if (mapa[y][x] != nullptr) {
+                delete mapa[y][x];
+                mapa[y][x] = nullptr;
             }
         }
     }
 }
 
 void Mapa::setVerticalLine(int x, int startY, int endY) {
+    if (x < 0 || x >= ancho) return;
+
     int ymin = std::max(1, startY);
     int ymax = std::min(alto - 2, endY);
+
     for (int y = ymin; y <= ymax; y++) {
-        // Verificar si ya existe un objeto en esa posición
-        Object* existing = getObjectAt(x, y);
-        if (!existing) {
-            // Si no existe, crear una nueva pared
-            mapa.push_back(new Pared(x, y));
-        } else {
-            // Si existe y no es pared, reemplazarlo
-            Pared* wall = dynamic_cast<Pared*>(existing);
-            if (!wall) {
-                // Remover el objeto existente y poner una pared
-                auto it = std::find(mapa.begin(), mapa.end(), existing);
-                if (it != mapa.end()) {
-                    delete *it;
-                    mapa.erase(it);
-                }
-                mapa.push_back(new Pared(x, y));
-            }
+        if (mapa[y][x] != nullptr) {
+            delete mapa[y][x];
         }
+        // crear nueva pared
+        mapa[y][x] = new Pared(x, y);
+        mapa[y][x-1] = nullptr;
     }
 }
 
-
 void Mapa::setHorizontalLine(int y, int startX, int endX) {
+    if (y < 0 || y >= alto) return;
+
     int xmin = std::max(1, startX);
     int xmax = std::min(ancho - 2, endX);
 
     for (int x = xmin; x <= xmax; x++) {
-        // Verificar si ya existe un objeto en esa posición
-        Object* existing = getObjectAt(x, y);
-        if (!existing) {
-            // Si no existe, crear una nueva pared
-            mapa.push_back(new Pared(x, y));
-        } else {
-            // Si existe y no es pared, reemplazarlo
-            Pared* wall = dynamic_cast<Pared*>(existing);
-            if (!wall) {
-                // Remover el objeto existente y poner una pared
-                auto it = std::find(mapa.begin(), mapa.end(), existing);
-                if (it != mapa.end()) {
-                    delete *it;
-                    mapa.erase(it);
-                }
-                mapa.push_back(new Pared(x, y));
-            }
+        // si ya existe un objeto, liberarlo primero
+        if (mapa[y][x] != nullptr) {
+            delete mapa[y][x];
         }
+        mapa[y][x] = new Pared(x, y);
     }
 }
 
 Object* Mapa::getObjectAt(int x, int y) {
-    for (Object* obj : mapa) {
-        if (obj && obj->getX() == x && obj->getY() == y) {
-            return obj;
-        }
+    if (x < 0 || x >= ancho || y < 0 || y >= alto) {
+        return nullptr;
     }
-    return nullptr;
+    return mapa[y][x];
 }
 
 bool Mapa::isWall(int x, int y) {
@@ -165,13 +160,11 @@ bool Mapa::isWall(int x, int y) {
 }
 
 void Mapa::clearArea(int x, int y) {
-    Object* obj = getObjectAt(x, y);
-    if (obj) {
-        auto it = std::find(mapa.begin(), mapa.end(), obj);
-        if (it != mapa.end()) {
-            delete *it;
-            mapa.erase(it);
-        }
+    if (x < 0 || x >= ancho || y < 0 || y >= alto) return;
+
+    if (mapa[y][x] != nullptr) {
+        delete mapa[y][x];
+        mapa[y][x] = nullptr;
     }
 }
 
@@ -213,25 +206,36 @@ void Mapa::loseLife() {
 }
 
 void Mapa::draw() {
-    // Dibujar todos los objetos del mapa
-    for (Object* obj : mapa) {
-        if (obj) {
-            obj->draw();
+    // dibujar todos los objetos de la matriz
+    for (int y = 0; y < alto; y++) {
+        for (int x = 0; x < ancho; x++) {
+            if (mapa[y][x] != nullptr) {
+                mapa[y][x]->draw();
+            }
         }
     }
 
-    // Dibujar power-ups
     for (PowerUp* power : powerups) {
         if (power) {
             power->draw();
         }
     }
 
-    // Mostrar información en la parte inferior
+    // informacion
     int maxY, maxX;
     getmaxyx(stdscr, maxY, maxX);
     mvprintw(maxY - 3, 0, "Score: %d", score);
     mvprintw(maxY - 2, 0, "Vidas: %d", vidas);
-    mvprintw(maxY - 1, 0, "Dimensiones: %dx%d | Objetos: %zu", ancho, alto, mapa.size());
-    mvprintw(maxY-3, maxX-12, "Q para salir");
+
+    size_t objectCount = 0;
+    for (int y = 0; y < alto; y++) {
+        for (int x = 0; x < ancho; x++) {
+            if (mapa[y][x] != nullptr) {
+                objectCount++;
+            }
+        }
+    }
+
+    mvprintw(maxY - 1, 0, "Dimensiones: %dx%d | Objetos: %zu", ancho, alto, objectCount);
+    mvprintw(maxY - 3, maxX - 12, "Q para salir");
 }
