@@ -11,7 +11,7 @@
 
 std::vector<int> puntajes;
 
-int gameLoop(int gameMode) {
+int gameLoop() {
     int ch;
 
     nodelay(stdscr, TRUE);
@@ -24,41 +24,15 @@ int gameLoop(int gameMode) {
     };
     Pacman pacman(15, 10, mapa);
 
-    /*
-    * Ajustes según la modalidad seleccionada
-    */
-    switch (gameMode) {
-        case 0: // Modo Clásico
-            // Configuración por defecto 
-            break;
-            
-        case 1: // Fantasmas Más Rápidos
-            for (auto& fantasma : fantasmas) {
-                // Agredar lógica para aumentar la velocidad de los fantasmas
-            }
-            break;
-            
-        case 2: // Dos Jugadores
-            // Aquí implementarías la lógica para el segundo jugador
-            break;
-    }
 
     mapa.generarMapa();
-    mapa.setVerticalLine(0.2 * mapa.getAncho(), 0.5 * mapa.getAlto(), mapa.getAlto());
-    mapa.setHorizontalLine(0.5 * mapa.getAlto(), 0.2 * mapa.getAncho(), 0.9 * mapa.getAncho());
-    
-    // Mostrar información de la modalidad activa
-    std::vector<std::string> modeNames = {"CLASICO", "RAPIDO", "2 JUGADORES"};
-    int maxY, maxX;
-    getmaxyx(stdscr, maxY, maxX);
-    
+    mapa.setVerticalLine(0.2 * mapa.getAncho(),0.5*mapa.getAlto(),mapa.getAlto());
+    mapa.setHorizontalLine(0.5 * mapa.getAlto(),0.2*mapa.getAncho(),0.9*mapa.getAncho());
     while (ch != 'q' && ch != 'Q') {
-        ch = getch();
+        ch = getch(); // Intenta obtener una tecla. Devuelve ERR si no hay
 
         mapa.draw();
         pacman.draw();
-
-        mvprintw(maxY - 3, maxX - 20, "Modo: %s", modeNames[gameMode].c_str());
 
         int oldpacX = pacman.getX();
         int oldpacY = pacman.getY();
@@ -74,6 +48,7 @@ int gameLoop(int gameMode) {
             if (oldfantasmaX != fantasma->getX() || oldfantasmaY != fantasma->getY()) {
                 Object* prevObj = mapa.getObjectAt(oldfantasmaX, oldfantasmaY);
                 char prevSprite = (prevObj ? prevObj->sprite : ' ');
+                // (y, x) = (fila, columna)
                 mvaddch(oldfantasmaY, oldfantasmaX, prevSprite);
             }
         }
@@ -84,6 +59,8 @@ int gameLoop(int gameMode) {
         if (oldpacX != pacX || oldpacY != pacY) {
             Object* prevObj = mapa.getObjectAt(oldpacX, oldpacY);
             char prevSprite = (prevObj ? prevObj->sprite : ' ');
+
+            // (y, x) = (fila, columna)
             mvaddch(oldpacY, oldpacX, prevSprite);
         }
 
@@ -101,10 +78,12 @@ int gameLoop(int gameMode) {
             if (fantasma && fantasma->getX() == pacX && fantasma->getY() == pacY) {
                 mapa.loseLife();
                 if (mapa.getVidas() <= 0) {
+                    // game over
                     refresh();
                     ch = 'q';
                     puntajes.push_back(mapa.getScore());
                 } else {
+                    // Resetear posiciones
                     int centerX = mapa.getAncho() / 2;
                     int centerY = mapa.getAlto() / 2;
                     pacman.setPos(centerX, centerY);
@@ -114,7 +93,6 @@ int gameLoop(int gameMode) {
 
         refresh();
     }
-    
     for (auto& fantasma : fantasmas) {
         delete fantasma;
     }
@@ -124,39 +102,20 @@ int gameLoop(int gameMode) {
 }
 
 int main() {
-    setupNcurses();
-    
+    setupNcurses(); // Función auxiliar para configurar ncurses correctamente
+    // Bucle principal que mantiene el programa en el menú
     while (true) {
-        int menuChoice = drawMainMenu();
+        int menuChoice = drawMainMenu(); // Muestra el menú y espera elección de usuario
 
         if (menuChoice == 0) { // Opción de "Iniciar Juego"
-            // PRIMERO mostrar selección de modalidad
-            int gameMode = drawGameModeMenu();
-            
-            if (gameMode == 3) { // Si seleccionó "Volver"
-                continue; // Volver al menú principal sin iniciar juego
-            }
-            
-            // Aquí puedes mostrar información de la modalidad seleccionada
-            std::vector<std::string> modeNames = {
-                "Modo Clasico", 
-                "Fantasmas Más Rápidos", 
-                "Dos Jugadores"
-            };
-            
-            clear();
-
-            
-            // Iniciar el juego con la modalidad seleccionada
-            int final_score = gameLoop(gameMode);
-            handle_end_of_game(final_score);
-            
+            int final_score = gameLoop(); // Lanzamiento del bucle del juego
+            handle_end_of_game(final_score);// Llamada a función para guardar puntaje
         } else if (menuChoice == 1) { // Opción de "Instrucciones"
-            drawInstructions();
+            drawInstructions(); // Mostrar instrucciones
         } else if (menuChoice == 2) { // Opción de "Ver Puntajes"
             display_highscore_screen();
-        } else if (menuChoice == 3) { // Opción de "Salir"
-            break;
+        }else if (menuChoice == 3) { // Opción de "Salir"
+            break; // Termina el programa
         }
     }
 
