@@ -38,12 +38,17 @@ void* ghost_update(void* arg) {
 
 int gameLoop(int gameMode) {
     start_music();
+    
     int frameCounter = 0;
     int ch = 0;
     nodelay(stdscr, TRUE);
 
     // inicializacion de objetos
     Mapa mapa;
+
+    // generar el mapa
+    mapa.generarMapa();
+
     std::vector<Ghost*> fantasmas = {
         new Ghost(4, 10, "1", mapa),
         new Ghost(4, 11, "2", mapa),
@@ -51,12 +56,26 @@ int gameLoop(int gameMode) {
         new Ghost(4, 13, "4", mapa),
         new Ghost(4, 14, "5", mapa)
     };
-    Pacman pacman(15, 10, mapa);
 
-    // generar el mapa
-    mapa.generarMapa();
-    mapa.setVerticalLine(0.2 * mapa.getAncho(), 0.5 * mapa.getAlto(), mapa.getAlto());
-    mapa.setHorizontalLine(0.5 * mapa.getAlto(), 0.2 * mapa.getAncho(), 0.9 * mapa.getAncho());
+    // Buscar posición inicial válida para Pac-Man
+    int cx = mapa.getAncho() / 2;
+    int cy = mapa.getAlto() / 2;
+    auto [pacX, pacY] = mapa.findFreeCellNear(cx, cy);
+    Pacman pacman(pacX, pacY, mapa);
+
+    //Pacman pacman(15, 10, mapa);
+
+    auto [gx1, gy1] = mapa.findFreeCellNear(cx, cy);
+    auto [gx2, gy2] = mapa.findFreeCellNear(cx, cy);
+    auto [gx3, gy3] = mapa.findFreeCellNear(cx, cy);
+
+    /*std::vector<Ghost*> fantasmas = {
+        new Ghost(gx1, gy1, "1", mapa),
+        new Ghost(gx2, gy2, "2", mapa),
+        new Ghost(gx3, gy3, "3", mapa)
+    };*/
+
+    clear();
 
     // variable de control para los hilos
     bool running = true;
@@ -89,7 +108,7 @@ int gameLoop(int gameMode) {
             clear();
         }
 
-        // control de música
+        // Control de música
         if (ch == 'm' || ch == 'M') {
             if (is_music_playing()) { // Si la música está sonando, detenerla
                 stop_music();
@@ -227,10 +246,130 @@ int gameLoop(int gameMode) {
     for (auto& f : fantasmas) {
         delete f;
     }
+    stop_music();
     fantasmas.clear();
     nodelay(stdscr, FALSE);
     return mapa.getScore();
 }
+
+/*int gameLoop() {
+    start_music();
+
+    int ch;
+    nodelay(stdscr, TRUE);
+
+    Mapa mapa;
+    mapa.generarMapa(); // Generar el mapa ANTES de colocar entidades
+
+    // Buscar posición inicial válida para Pac-Man
+    int cx = mapa.getAncho() / 2;
+    int cy = mapa.getAlto() / 2;
+    auto [pacX, pacY] = mapa.findFreeCellNear(cx, cy);
+    Pacman pacman(pacX, pacY, mapa);
+
+    /*
+    // Colocar fantasmas cerca del centro, pero en celdas libres
+    int cx = mapa.getAncho() / 2;
+    int cy = mapa.getAlto() / 2;
+    std::vector<Ghost*> fantasmas = {
+        new Ghost(cx, cy - 3, "1", mapa),
+        new Ghost(cx - 1, cy - 3, "2", mapa),
+        new Ghost(cx + 1, cy - 3, "3", mapa)
+    };
+
+    auto [gx1, gy1] = mapa.findFreeCellNear(cx, cy);
+    auto [gx2, gy2] = mapa.findFreeCellNear(cx, cy);
+    auto [gx3, gy3] = mapa.findFreeCellNear(cx, cy);
+
+    std::vector<Ghost*> fantasmas = {
+        new Ghost(gx1, gy1, "1", mapa),
+        new Ghost(gx2, gy2, "2", mapa),
+        new Ghost(gx3, gy3, "3", mapa)
+    };
+
+    clear();
+
+    while (ch != 'q' && ch != 'Q') {
+        ch = getch();
+
+        if (ch == 'm' || ch == 'M') {
+            if (is_music_playing()) stop_music();
+            else start_music();
+        }
+
+        mapa.draw();
+        pacman.draw();
+
+        int oldpacX = pacman.getX();
+        int oldpacY = pacman.getY();
+
+        pacman.update();
+        bool any_fantasma_moved = false;
+
+        for (const auto& fantasma : fantasmas) {
+            int oldfantasmaX = fantasma->getX();
+            int oldfantasmaY = fantasma->getY();
+
+            fantasma->draw();
+            fantasma->update(fantasmas);
+
+            if (oldfantasmaX != fantasma->getX() || oldfantasmaY != fantasma->getY()) {
+                Object* prevObj = mapa.getObjectAt(oldfantasmaX, oldfantasmaY);
+                char prevSprite = (prevObj ? prevObj->sprite : ' ');
+                mvaddch(oldfantasmaY, oldfantasmaX, prevSprite);
+                any_fantasma_moved = true;
+            }
+        }
+
+        if (any_fantasma_moved) play_move_sound();
+
+        int pacXnew = pacman.getX();
+        int pacYnew = pacman.getY();
+
+        if (oldpacX != pacXnew || oldpacY != pacYnew) {
+            Object* prevObj = mapa.getObjectAt(oldpacX, oldpacY);
+            char prevSprite = (prevObj ? prevObj->sprite : ' ');
+            mvaddch(oldpacY, oldpacX, prevSprite);
+        }
+
+        Object* obj = mapa.getObjectAt(pacXnew, pacYnew);
+        if (obj && dynamic_cast<Punto*>(obj)) {
+            mapa.addScore(10);
+            mapa.clearArea(pacXnew, pacYnew);
+            play_eat_sound();
+        } else if (obj && dynamic_cast<PowerUp*>(obj)) {
+            PowerUp* pu = dynamic_cast<PowerUp*>(obj);
+            pu->activarEfecto();
+            mapa.clearArea(pacXnew, pacYnew);
+            play_powerup_sound();
+        }
+
+        for (const auto& fantasma : fantasmas) {
+            if (fantasma && fantasma->getX() == pacXnew && fantasma->getY() == pacYnew) {
+                mapa.loseLife();
+                play_die_sound();
+                if (mapa.getVidas() <= 0) {
+                    play_gameover_sound();
+                    refresh();
+                    ch = 'q';
+                    puntajes.push_back(mapa.getScore());
+                } else {
+                    auto [respawnX, respawnY] = mapa.findFreeCellNear(cx, cy);
+                    pacman.setPos(respawnX, respawnY);
+                }
+            }
+        }
+
+        refresh();
+    }
+
+    for (auto& fantasma : fantasmas) delete fantasma;
+    fantasmas.clear();
+
+    nodelay(stdscr, FALSE);
+    return mapa.getScore();
+}*/
+
 
 int main() {
     setupNcurses();

@@ -20,6 +20,9 @@
 // Música en el juego
 pid_t music_pid = -1;
 pid_t move_sound_pid = -1; // PID del sonido de movimiento
+pid_t eat_sound_pid = -1; // PID del sonido de comer punto
+pid_t die_sound_pid = -1; // PID del sonido de morir
+pid_t gameover_sound_pid = -1; // PID del sonido de game over
 std::list<pid_t> sound_pids; // Lista para almacenar los PIDs de los sonidos
 
 void start_music() { // Iniciar música de fondo (en bucle)
@@ -50,6 +53,25 @@ void stop_music() { // Detener música de fondo
         waitpid(move_sound_pid, NULL, 0);
         move_sound_pid = -1;
     }
+
+    if (eat_sound_pid != -1) {
+        kill(eat_sound_pid, SIGTERM);
+        waitpid(eat_sound_pid, NULL, 0);
+        eat_sound_pid = -1;
+    }
+
+    if (die_sound_pid != -1) {
+        kill(die_sound_pid, SIGTERM);
+        waitpid(die_sound_pid, NULL, 0);
+        die_sound_pid = -1;
+    }
+
+    if (gameover_sound_pid != -1) {
+        kill(gameover_sound_pid, SIGTERM);
+        waitpid(gameover_sound_pid, NULL, 0);
+        gameover_sound_pid = -1;
+    }
+
     sound_pids.clear();
 }
 
@@ -62,7 +84,8 @@ void play_sound(const char* sound_file) { // Función genérica para reproducir 
     pid_t sound_pid = fork();
 
     if (sound_pid == 0) {
-        execlp("mpg123", "mpg123", "-q", sound_file, (char *)NULL);
+        //("sh", "sh", "-c", "while true; do mpg123 -q ./resources/start.mp3 > /dev/null 2>&1; done", (char *)NULL)
+        execlp("sh", "sh", "-c", "mpg123 -q sound_file > /dev/null 2>&1;", (char *)NULL); //("mpg123", "mpg123", "-q", sound_file, (char *)NULL)
         _exit(1);
     } else if (sound_pid > 0) {
         sound_pids.push_back(sound_pid); // Guarda el PID
@@ -78,17 +101,35 @@ void play_move_sound() { // Sonido de movimiento de fantasmas
     }
     move_sound_pid = fork();
     if (move_sound_pid == 0) {
-        execlp("mpg123", "mpg123", "-q", "./resources/move.mp3", (char *)NULL);
+        execlp("sh", "sh", "-c", "mpg123 -q ./resources/move.mp3 > /dev/null 2>&1;", (char *)NULL); //("mpg123", "mpg123", "-q", "./resources/move.mp3", (char *)NULL)
         _exit(1);
     }
 }
 
 void play_eat_sound() { // Sonido de comer punto
-    play_sound("./resources/eat.mp3");
+    if (eat_sound_pid != -1) {
+        kill(eat_sound_pid, SIGTERM);
+        waitpid(eat_sound_pid, NULL, 0);
+        eat_sound_pid = -1;
+    }
+    eat_sound_pid = fork();
+    if (eat_sound_pid == 0) {
+        execlp("sh", "sh", "-c", "mpg123 -q ./resources/eat.mp3 > /dev/null 2>&1;", (char *)NULL); //("mpg123", "mpg123", "-q", "./resources/eat.mp3", (char *)NULL)
+        _exit(1);
+    }
 }
 
 void play_die_sound() { // Sonido de morir
-    play_sound("./resources/die.mp3");
+    if (die_sound_pid != -1) {
+        kill(die_sound_pid, SIGTERM);
+        waitpid(die_sound_pid, NULL, 0);
+        die_sound_pid = -1;
+    }
+    die_sound_pid = fork();
+    if (die_sound_pid == 0) {
+        execlp("sh", "sh", "-c", "mpg123 -q ./resources/die.mp3 > /dev/null 2>&1;", (char *)NULL); //("mpg123", "mpg123", "-q", "./resources/die.mp3", (char *)NULL)
+        _exit(1);
+    }
 }
 
 void play_powerup_sound() { // Sonido de power-up
@@ -96,7 +137,16 @@ void play_powerup_sound() { // Sonido de power-up
 }
 
 void play_gameover_sound() { // Sonido de game over
-    play_sound("./resources/gameover.mp3");
+    if (gameover_sound_pid != -1) {
+        kill(gameover_sound_pid, SIGTERM);
+        waitpid(gameover_sound_pid, NULL, 0);
+        gameover_sound_pid = -1;
+    }
+    gameover_sound_pid = fork();
+    if (gameover_sound_pid == 0) {
+        execlp("sh", "sh", "-c", "mpg123 -q ./resources/gameover.mp3 > /dev/null 2>&1;", (char *)NULL); //("mpg123", "mpg123", "-q", "./resources/gameover.mp3", (char *)NULL)
+        _exit(1);
+    }
 }
 
 // Centralización del texto en la pantalla
