@@ -15,15 +15,16 @@
 
 // Música en el juego
 pid_t music_pid = -1;
+pid_t move_sound_pid = -1; // PID del sonido de movimiento
 std::list<pid_t> sound_pids; // Lista para almacenar los PIDs de los sonidos
 
-void start_music() { // Iniciar música de fondo
+void start_music() { // Iniciar música de fondo (en bucle)
     if (music_pid == -1) {
         music_pid = fork();
         if (music_pid == 0) {
-            //Ejecutar el comando de música
-            execlp("sh", "sh", "-c", "while true; do mpg123 ./resources/music.mp3; done", (char *)NULL); //FALTA AGREGAR LA MÚSICA EN ESPECÍFICO
-            _exit(1); // Si execlp falla
+            // Redirige stdout y stderr para que no se muestren en ncurses
+            execlp("sh", "sh", "-c", "while true; do mpg123 -q ./resources/start.mp3 > /dev/null 2>&1; done", (char *)NULL);
+            _exit(1);
         }
     }
 }
@@ -38,6 +39,12 @@ void stop_music() { // Detener música de fondo
     for (pid_t pid : sound_pids) {
         kill(pid, SIGTERM);
         waitpid(pid, NULL, 0);
+    }
+    
+    if (move_sound_pid != -1) {
+        kill(move_sound_pid, SIGTERM);
+        waitpid(move_sound_pid, NULL, 0);
+        move_sound_pid = -1;
     }
     sound_pids.clear();
 }
@@ -58,12 +65,18 @@ void play_sound(const char* sound_file) { // Función genérica para reproducir 
     }
 }
 
-void play_start_sound() { // Sonido de inicio
-    play_sound("./resources/start.mp3"); 
-}
-
 void play_move_sound() { // Sonido de movimiento de fantasmas
-    play_sound("./resources/move.mp3"); 
+    // Si hay un sonido de movimiento activo, detenlo
+    if (move_sound_pid != -1) {
+        kill(move_sound_pid, SIGTERM);
+        waitpid(move_sound_pid, NULL, 0);
+        move_sound_pid = -1;
+    }
+    move_sound_pid = fork();
+    if (move_sound_pid == 0) {
+        execlp("mpg123", "mpg123", "-q", "./resources/move.mp3", (char *)NULL);
+        _exit(1);
+    }
 }
 
 void play_eat_sound() { // Sonido de comer punto

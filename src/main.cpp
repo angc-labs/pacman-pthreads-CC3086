@@ -12,8 +12,8 @@
 std::vector<int> puntajes;
 
 int gameLoop() {
-    play_start_sound(); // Efecto de inicio
-
+    start_music(); // Inicia la música de fondo
+    
     int ch;
 
     nodelay(stdscr, TRUE);
@@ -52,6 +52,8 @@ int gameLoop() {
         int oldpacY = pacman.getY();
 
         pacman.update();
+        bool any_fantasma_moved = false;
+
         for (const auto& fantasma : fantasmas) {
             int oldfantasmaX = fantasma->getX();
             int oldfantasmaY = fantasma->getY();
@@ -60,12 +62,16 @@ int gameLoop() {
             fantasma->update(fantasmas);
 
             if (oldfantasmaX != fantasma->getX() || oldfantasmaY != fantasma->getY()) {
-                play_move_sound(); // Efecto de movimiento de fantasmas
                 Object* prevObj = mapa.getObjectAt(oldfantasmaX, oldfantasmaY);
                 char prevSprite = (prevObj ? prevObj->sprite : ' ');
                 // (y, x) = (fila, columna)
                 mvaddch(oldfantasmaY, oldfantasmaX, prevSprite);
+            }if (oldfantasmaX != fantasma->getX() || oldfantasmaY != fantasma->getY()) {
+                any_fantasma_moved = true;
             }
+        }
+        if (any_fantasma_moved) {
+            play_move_sound(); // Efecto de movimiento de fantasmas
         }
 
         int pacX = pacman.getX();
