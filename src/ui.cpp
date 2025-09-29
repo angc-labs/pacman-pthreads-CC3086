@@ -74,7 +74,7 @@ int drawMainMenu() {
             }
         }
         
-        print_centered(15, "\t   Usa las flechas para navegar y Enter para seleccionar");
+        print_centered(15, "\tUsa las flechas ⬆️⬇️  para navegar y Enter 🔴  para seleccionar");
 
         refresh();
 

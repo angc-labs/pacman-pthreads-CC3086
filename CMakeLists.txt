@@ -14,6 +14,10 @@ include_directories(${CURSES_INCLUDE_DIR})
 file(GLOB SOURCES "src/*.cpp" "src/other/*.cpp")
 add_executable(pacman ${SOURCES}
         src/Object.cpp
+        src/Ghost.cpp
+        src/ui.cpp
+        src/highscore.cpp
+        src/Mapa.cpp
         src/PowerUp.cpp
         src/Pacman.cpp
         src/Punto.cpp
