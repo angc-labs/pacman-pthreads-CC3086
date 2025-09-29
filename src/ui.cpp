@@ -1,17 +1,86 @@
 /* Descripción del archivo: Lógica para dibujar las pantallas declaradas en ui.h con ncurses */
-#define _XOPEN_SOURCE_EXTENDED
 
-#include <cwchar>
-#include <codecvt>
-
-#include "ui.h"
-#include <vector>
-#include <string>
-#include <locale.h>
-#include <ncursesw/curses.h>
+#include "ui.h" // Inclusión de las declaraciones de las funciones
+#include <vector> // Para std::vector en el menú
+#include <string> // Para std::string
+#include <ncurses.h>
 #include "highscore.h" // Para incluir las declaraciones de las funciones
+#include <unistd.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <list>
 
 // DECLARACIÓN DE FUNCIONES AUXILIARES ESENCIALES
+
+// Música en el juego
+pid_t music_pid = -1;
+std::list<pid_t> sound_pids; // Lista para almacenar los PIDs de los sonidos
+
+void start_music() { // Iniciar música de fondo
+    if (music_pid == -1) {
+        music_pid = fork();
+        if (music_pid == 0) {
+            //Ejecutar el comando de música
+            execlp("sh", "sh", "-c", "while true; do mpg123 ./resources/music.mp3; done", (char *)NULL); //FALTA AGREGAR LA MÚSICA EN ESPECÍFICO
+            _exit(1); // Si execlp falla
+        }
+    }
+}
+
+void stop_music() { // Detener música de fondo
+    if (music_pid != -1) {
+        kill(music_pid, SIGTERM);
+        waitpid(music_pid, NULL, 0);
+        music_pid = -1;
+    }
+    // Detener todos los sonidos activos
+    for (pid_t pid : sound_pids) {
+        kill(pid, SIGTERM);
+        waitpid(pid, NULL, 0);
+    }
+    sound_pids.clear();
+}
+
+bool is_music_playing() { // Verificar si la música está sonando
+    return music_pid != -1;
+}
+
+// Sonidos de efectos
+void play_sound(const char* sound_file) { // Función genérica para reproducir un sonido
+    pid_t sound_pid = fork();
+
+    if (sound_pid == 0) {
+        execlp("mpg123", "mpg123", "-q", sound_file, (char *)NULL);
+        _exit(1);
+    } else if (sound_pid > 0) {
+        sound_pids.push_back(sound_pid); // Guarda el PID
+    }
+}
+
+void play_start_sound() { // Sonido de inicio
+    play_sound("./resources/start.mp3"); 
+}
+
+void play_move_sound() { // Sonido de movimiento de fantasmas
+    play_sound("./resources/move.mp3"); 
+}
+
+void play_eat_sound() { // Sonido de comer punto
+    play_sound("./resources/eat.mp3");
+}
+
+void play_die_sound() { // Sonido de morir
+    play_sound("./resources/die.mp3");
+}
+
+void play_powerup_sound() { // Sonido de power-up
+    play_sound("./resources/powerup.mp3"); 
+}
+
+void play_gameover_sound() { // Sonido de game over
+    play_sound("./resources/gameover.mp3");
+}
 
 // Centralización del texto en la pantalla
 void print_centered(int starty, const std::string& text) {
@@ -21,7 +90,6 @@ void print_centered(int starty, const std::string& text) {
 
 // Configuración e inicialización de la terminal para usar ncurses
 void setupNcurses() {
-    setlocale(LC_ALL, "en_US.UTF-8");
     initscr();            // Inicialización de ncurses
     noecho();             // No mostrar las teclas presionadas
     cbreak();             // Procesamiento de entrada inmediato
@@ -31,7 +99,6 @@ void setupNcurses() {
     // Definición de pares de colores (ID, color de texto, color de fondo)
     init_pair(1, COLOR_YELLOW, COLOR_BLACK); // Para Pac-Man y texto
     init_pair(2, COLOR_WHITE, COLOR_BLACK);  // Para texto normal
-    init_pair(3, COLOR_BLUE, COLOR_BLACK);
 }
 
 // Restauración de la terminal (estado normal) al cerrar programa
@@ -43,7 +110,9 @@ void closeNcurses() {
    - Implementación de menú principal y navegación mediante:
         * Teclas WASD
         * Flechas 
-        * Enter para seleccionar */
+        * Enter para seleccionar
+        * Tecla 'm' para alternar música de fondo 
+*/
 int drawMainMenu() {
     std::vector<std::string> options = {"Iniciar Juego","Instrucciones","Ver puntaje","Salir"};
     int choice = 0;
@@ -69,7 +138,7 @@ int drawMainMenu() {
             }
         }
         
-        print_centered(15, "\t   Usa las flechas ⬆ ⬇ ️para navegar y Enter para seleccionar");
+        print_centered(15, "Usa las flechas para navegar y Enter para seleccionar");
 
         refresh();
 
@@ -86,6 +155,13 @@ int drawMainMenu() {
                 break;
             case 10: // Enter = 10 en código ASCII
                 return choice; // Devuelve 0 o 1
+            case 'm': // Tecla 'm' para alternar música
+                if (is_music_playing()) { // Si la música está sonando, detenerla
+                    stop_music();
+                }else { // Si no está sonando, iniciarla
+                    start_music();
+                }
+                break;
         }
     }
 }
@@ -113,6 +189,7 @@ void drawInstructions() {
         " - Flechas: Mover a Pac-Man (arriba, abajo, izquierda, derecha)",
         " - P: Pausar/Reanudar juego",
         " - Q: Salir al menu principal",
+        " - M: Alternar música de fondo"
         "",
         "ELEMENTOS:",
         " - C: Pac-Man (jugador)",
@@ -187,7 +264,7 @@ void display_highscore_screen() {
         int bottom_line = getmaxy(stdscr) - 3;
         
         if (scores_to_show < total_scores) {
-            mvprintw(bottom_line, 10, "Presiona 'm' para ver mas puntajes.");
+            mvprintw(bottom_line, 10, "Presiona 'r' para ver mas puntajes.");
         }
         
         mvprintw(bottom_line + 1, 10, "Presiona 'q' para volver al menu principal.");
@@ -196,7 +273,7 @@ void display_highscore_screen() {
 
         if (input == 'q' || input == 'Q') break;
         
-        if (input == 'm' && scores_to_show < total_scores) {
+        if (input == 'r' && scores_to_show < total_scores) {
             scores_to_show += 10;
         }
     }   

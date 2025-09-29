@@ -5,6 +5,9 @@
 #include <ncursesw/ncurses.h>
 #include <string>
 #include <vector>
+#include <unistd.h>
+#include <signal.h>
+#include <sys/types.h>
 
 // Dibuja el menú principal y devuelve la opción seleccionada por el usuario.
 // Opciones: 0 para "Iniciar Juego", 1 para "Salir".
@@ -27,5 +30,16 @@ void handle_end_of_game(int final_score);
 
 // Para validación de la extensión de caracteres del nombre
 std::string getPlayerName(); 
+
+// Funciones para manejar la música de fondo
+void start_music();
+void stop_music();
+bool is_music_playing();
+void play_start_sound();
+void play_move_sound();
+void play_eat_sound();
+void play_die_sound();
+void play_powerup_sound();
+void play_gameover_sound();
 
 #endif // UI_H

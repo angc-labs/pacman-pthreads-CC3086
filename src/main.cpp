@@ -1,6 +1,6 @@
 #include <iostream>
 #include <ncurses.h>
-#include "ui.h" // Para usar las funciones drawMainMenu
+#include "ui.h" // Para usar las funciones drawMainMenu y de música
 #include "Mapa.h"
 #include "Pacman.h"
 #include "Punto.h"
@@ -12,6 +12,8 @@
 std::vector<int> puntajes;
 
 int gameLoop() {
+    play_start_sound(); // Efecto de inicio
+
     int ch;
 
     nodelay(stdscr, TRUE);
@@ -28,8 +30,20 @@ int gameLoop() {
     mapa.generarMapa();
     mapa.setVerticalLine(0.2 * mapa.getAncho(),0.5*mapa.getAlto(),mapa.getAlto());
     mapa.setHorizontalLine(0.5 * mapa.getAlto(),0.2*mapa.getAncho(),0.9*mapa.getAncho());
+
+    clear(); // Limpia la pantalla antes de dibujar
+
     while (ch != 'q' && ch != 'Q') {
         ch = getch(); // Intenta obtener una tecla. Devuelve ERR si no hay
+
+        // Control de música
+        if (ch == 'm' || ch == 'M') {
+            if (is_music_playing()) { // Si la música está sonando, detenerla
+                stop_music();
+            }else { // Si no está sonando, iniciarla
+                start_music();
+            }
+        }
 
         mapa.draw();
         pacman.draw();
@@ -46,6 +60,7 @@ int gameLoop() {
             fantasma->update(fantasmas);
 
             if (oldfantasmaX != fantasma->getX() || oldfantasmaY != fantasma->getY()) {
+                play_move_sound(); // Efecto de movimiento de fantasmas
                 Object* prevObj = mapa.getObjectAt(oldfantasmaX, oldfantasmaY);
                 char prevSprite = (prevObj ? prevObj->sprite : ' ');
                 // (y, x) = (fila, columna)
@@ -68,17 +83,21 @@ int gameLoop() {
         if (obj && dynamic_cast<Punto*>(obj)) {
             mapa.addScore(10);
             mapa.clearArea(pacX, pacY);
+            play_eat_sound(); // Efecto de comer punto
         } else if (obj && dynamic_cast<PowerUp*>(obj)) {
             PowerUp* pu = dynamic_cast<PowerUp*>(obj);
             pu->activarEfecto();
             mapa.clearArea(pacX, pacY);
+            play_powerup_sound(); // Efecto de power-up
         }
 
         for (const auto& fantasma : fantasmas) {
             if (fantasma && fantasma->getX() == pacX && fantasma->getY() == pacY) {
                 mapa.loseLife();
+                play_die_sound(); // Efecto de morir
                 if (mapa.getVidas() <= 0) {
                     // game over
+                    play_gameover_sound(); // Efecto de game over
                     refresh();
                     ch = 'q';
                     puntajes.push_back(mapa.getScore());
