@@ -64,7 +64,7 @@ bool Ghost::shouldMoveThisFrame() {
     return false;
 }
 
-void Ghost::update(const std::vector<Ghost*>& ghosts) {
+/*void Ghost::update(const std::vector<Ghost*>& ghosts) {
     if (!shouldMoveThisFrame()) {
         return;
     }
@@ -86,7 +86,30 @@ void Ghost::update(const std::vector<Ghost*>& ghosts) {
         x = tempX;
         y = tempY;
     }
+}*/
+
+void Ghost::update(const std::vector<Ghost*>& ghosts) {
+    if (!shouldMoveThisFrame()) return;
+
+    // Generar todas las opciones posibles
+    std::vector<int> opciones;
+    if (!checkCollision(x, y - velocidad, ghosts)) opciones.push_back(0); // arriba
+    if (!checkCollision(x, y + velocidad, ghosts)) opciones.push_back(1); // abajo
+    if (!checkCollision(x - velocidad, y, ghosts)) opciones.push_back(2); // izquierda
+    if (!checkCollision(x + velocidad, y, ghosts)) opciones.push_back(3); // derecha
+
+    if (!opciones.empty()) {
+        // Elegir aleatoriamente una dirección válida
+        direction = opciones[rand() % opciones.size()];
+
+        // Aplicar movimiento según la dirección elegida
+        if (direction == 0) y -= velocidad;
+        else if (direction == 1) y += velocidad;
+        else if (direction == 2) x -= velocidad;
+        else if (direction == 3) x += velocidad;
+    }
 }
+
 void Ghost::setEstado(const std::string& nuevoEstado) {
     estado = nuevoEstado;
 }
