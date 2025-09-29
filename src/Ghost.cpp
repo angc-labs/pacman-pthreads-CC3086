@@ -17,7 +17,7 @@ Object(x, y, 'G'), mapa(mapa){
     tipo = t;
     estado = "normal";
     direction = 0;
-    moveDelay = 500;
+    moveDelay = 1000;
     frameCounterDirection = 0;
     moveDirectionDelay = 25*moveDelay;
 }

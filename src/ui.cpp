@@ -1,15 +1,19 @@
 /* Descripción del archivo: Lógica para dibujar las pantallas declaradas en ui.h con ncurses */
+#define _XOPEN_SOURCE_EXTENDED
 
-#include "ui.h" // Inclusión de las declaraciones de las funciones
 #include <vector> // Para std::vector en el menú
 #include <string> // Para std::string
-#include <ncurses.h>
-#include "highscore.h" // Para incluir las declaraciones de las funciones
 #include <unistd.h>
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <list>
+#include <cwchar>
+#include <codecvt>
+#include "../headers/ui.h"
+#include <locale.h>
+#include <ncursesw/curses.h>
+#include "../headers/highscore.h" // Para incluir las declaraciones de las funciones
 
 // DECLARACIÓN DE FUNCIONES AUXILIARES ESENCIALES
 
@@ -40,7 +44,7 @@ void stop_music() { // Detener música de fondo
         kill(pid, SIGTERM);
         waitpid(pid, NULL, 0);
     }
-    
+
     if (move_sound_pid != -1) {
         kill(move_sound_pid, SIGTERM);
         waitpid(move_sound_pid, NULL, 0);
@@ -88,7 +92,7 @@ void play_die_sound() { // Sonido de morir
 }
 
 void play_powerup_sound() { // Sonido de power-up
-    play_sound("./resources/powerup.mp3"); 
+    play_sound("./resources/powerup.mp3");
 }
 
 void play_gameover_sound() { // Sonido de game over
@@ -103,6 +107,7 @@ void print_centered(int starty, const std::string& text) {
 
 // Configuración e inicialización de la terminal para usar ncurses
 void setupNcurses() {
+    setlocale(LC_ALL, "en_US.UTF-8");
     initscr();            // Inicialización de ncurses
     noecho();             // No mostrar las teclas presionadas
     cbreak();             // Procesamiento de entrada inmediato
@@ -112,6 +117,7 @@ void setupNcurses() {
     // Definición de pares de colores (ID, color de texto, color de fondo)
     init_pair(1, COLOR_YELLOW, COLOR_BLACK); // Para Pac-Man y texto
     init_pair(2, COLOR_WHITE, COLOR_BLACK);  // Para texto normal
+    init_pair(3, COLOR_BLUE, COLOR_BLACK);
 }
 
 // Restauración de la terminal (estado normal) al cerrar programa
@@ -124,10 +130,15 @@ void closeNcurses() {
         * Teclas WASD
         * Flechas 
         * Enter para seleccionar
-        * Tecla 'm' para alternar música de fondo 
+        * Tecla 'm' para alternar música de fondo
 */
 int drawMainMenu() {
-    std::vector<std::string> options = {"Iniciar Juego","Instrucciones","Ver puntaje","Salir"};
+    std::vector<std::string> options =
+    {"Iniciar Juego",
+        "Instrucciones",
+        "Ver puntaje",
+        "Salir"};
+
     int choice = 0;
     int key;
 
@@ -354,4 +365,94 @@ std::string getPlayerName() {
     move(18, 10); clrtoeol();
 
     return playerName;
+}
+
+/*
+* Pantalla para escojer modalidad de juego
+*/
+
+int drawGameModeMenu() {
+    /*
+    * Menu de selección de modalidad de juego
+    */
+    std::vector<std::string> options = {
+        "Modo Clasico",
+        "Fantasmas Mas Rapidos",
+        "Dos Jugadores",
+        "Volver"
+    };
+
+    int choice = 0;
+    int key;
+
+    while (true) {
+        clear();
+
+        // Título principal con mejor presentación
+        attron(COLOR_PAIR(1) | A_BOLD);
+        print_centered(3, "MODALIDADES DE JUEGO");
+        print_centered(4, "=====================");
+        attroff(COLOR_PAIR(1) | A_BOLD);
+
+        // Instrucciones mejoradas
+        attron(COLOR_PAIR(3) | A_BOLD);
+        print_centered(6, "CONTROLES:");
+        attroff(COLOR_PAIR(2) | A_BOLD);
+        print_centered(7, "Flechas: Navegar   ENTER: Seleccionar   Q: Volver");
+
+        // Dibujo de las opciones con mejor formato
+        for (size_t i = 0; i < options.size(); ++i) {
+            int y_pos = 10 + i * 3;
+
+            if (i == choice) {
+                // Opción seleccionada - resaltada
+                attron(A_REVERSE | A_BOLD);
+                print_centered(y_pos, options[i]);
+                attroff(A_REVERSE | A_BOLD);
+
+                // Mostrar descripción detallada de la opción seleccionada
+                attron(COLOR_PAIR(2));
+
+            } else {
+                // Opción no seleccionada
+                attron(COLOR_PAIR(1) | A_BOLD);
+                print_centered(y_pos, options[i]);
+                attroff(COLOR_PAIR(2));
+            }
+        }
+
+        attron(COLOR_PAIR(3) | A_BOLD);
+        std::string footer = "Seleccionado: " + options[choice];
+        if (choice == 3) {
+            footer += " - Presiona ENTER para confirmar";
+        } else {
+            footer += " - Presiona ENTER para jugar";
+        }
+
+        print_centered(23, footer);
+        attroff(COLOR_PAIR(3) | A_BOLD);
+
+        refresh();
+        key = getch();
+
+        switch (key) {
+            case KEY_UP:
+            case 'w':
+            case 'W':
+                choice = (choice - 1 + options.size()) % options.size();
+                break;
+            case KEY_DOWN:
+            case 's':
+            case 'S':
+                choice = (choice + 1) % options.size();
+                break;
+            case 10: // Enter
+                return choice;
+            case 'q':
+            case 'Q':
+                return 3;
+            case ' ':
+                return choice;
+        }
+    }
 }

@@ -28,6 +28,12 @@ void display_highscore_screen();
 // Maneja la pantalla de fin de juego y guardado de puntaje
 void handle_end_of_game(int final_score);
 
+// Dibuja el menú de selección de modalidad de juego y devuelve la opción seleccionada
+int drawGameModeMenu();
+
+// Declaración de la función gameLoop con valor por defecto que es el modo clásico
+int gameLoop(int gameMode = 0);
+
 // Para validación de la extensión de caracteres del nombre
 std::string getPlayerName(); 
 
