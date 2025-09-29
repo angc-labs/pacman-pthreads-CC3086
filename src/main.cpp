@@ -93,13 +93,14 @@ int gameLoop(int gameMode) {
         if (ch == 'm' || ch == 'M') {
             if (is_music_playing()) { // Si la música está sonando, detenerla
                 stop_music();
-            }else { // Si no está sonando, iniciarla
+            } else { // Si no está sonando, iniciarla
                 start_music();
             }
         }
 
         bool any_fantasma_moved = false;
 
+        pthread_mutex_lock(&game_mutex);
         for (const auto& fantasma : fantasmas) {
             int oldfantasmaX = fantasma->getX();
             int oldfantasmaY = fantasma->getY();
@@ -116,8 +117,9 @@ int gameLoop(int gameMode) {
                 any_fantasma_moved = true;
             }
         }
+        pthread_mutex_unlock(&game_mutex);
         if (any_fantasma_moved) {
-            play_move_sound(); // Efecto de movimiento de fantasmas
+            // play_move_sound(); // Efecto de movimiento de fantasmas
         }
 
         // posiciones anteriores de fantasmas
@@ -179,13 +181,13 @@ int gameLoop(int gameMode) {
         if (obj && dynamic_cast<Punto*>(obj)) {
             mapa.addScore(10);
             mapa.clearArea(pacman.getX(), pacman.getY());
-            play_eat_sound(); // Efecto de comer punto
+            // play_eat_sound(); // Efecto de comer punto
         } else if (obj && dynamic_cast<PowerUp*>(obj)) {
             PowerUp* pu = dynamic_cast<PowerUp*>(obj);
             if (pu) {
                 pu->activarEfecto();
                 mapa.clearArea(pacman.getX(), pacman.getY());
-                play_powerup_sound();
+                // play_powerup_sound();
             }
         }
 

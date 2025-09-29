@@ -54,6 +54,7 @@ qqq 440
 qqqq 420
 qqqqqqqqq 420
 qqq 380
+qqqqqqqqqqqqq 310
 ANG 310
 asasas 300
 qqq 180
