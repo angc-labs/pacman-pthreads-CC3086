@@ -1,13 +1,13 @@
 #include <iostream>
-#include <ncurses.h>
-#include "ui.h" // Para usar las funciones drawMainMenu
-#include "Mapa.h"
-#include "Pacman.h"
-#include "Punto.h"
-#include <unistd.h> // Necesario para la función usleep()
+#include <ncursesw/ncurses.h>
+#include "../headers/ui.h"
+#include "../headers/Mapa.h"
+#include "../headers/Pacman.h"
+#include "../headers/Punto.h"
+#include <unistd.h>
 #include <vector>
 #include <memory>
-#include "Ghost.h"
+#include "../headers/Ghost.h"
 #include <pthread.h>
 
 std::vector<int> puntajes;
@@ -37,6 +37,7 @@ void* ghost_update(void* arg) {
 }
 
 int gameLoop(int gameMode) {
+    int frameCounter = 0;
     int ch = 0;
     nodelay(stdscr, TRUE);
 
@@ -81,7 +82,11 @@ int gameLoop(int gameMode) {
 
     // bucle principal del juego
     while (ch != 'q' && ch != 'Q') {
+        frameCounter++;
         ch = getch();
+        if (frameCounter == 500) {
+            clear();
+        }
 
         // posiciones anteriores de fantasmas
         std::vector<std::pair<int, int>> ghost_old_ositions;
@@ -150,7 +155,7 @@ int gameLoop(int gameMode) {
             }
         }
 
-        // colisiones Pacman vs Fantasmas
+        // colisiones pacman vs fantasmas
         for (auto f : fantasmas) {
             if (f && f->getX() == pacman.getX() && f->getY() == pacman.getY()) {
                 mapa.loseLife();

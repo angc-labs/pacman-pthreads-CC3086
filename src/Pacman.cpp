@@ -12,7 +12,7 @@ Pacman::Pacman(int x, int y, Mapa& map) :
     lastKey(0),
     mapa(map),
     frameCounter(0),
-    moveDelay(500) {}
+    moveDelay(2000) {}
 
 void Pacman::moveInput() {
     int key = getch();

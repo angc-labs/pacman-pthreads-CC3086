@@ -4,12 +4,12 @@
 #include <cwchar>
 #include <codecvt>
 
-#include "ui.h"
+#include "../headers/ui.h"
 #include <vector>
 #include <string>
 #include <locale.h>
 #include <ncursesw/curses.h>
-#include "highscore.h" // Para incluir las declaraciones de las funciones
+#include "../headers/highscore.h" // Para incluir las declaraciones de las funciones
 
 // DECLARACIÓN DE FUNCIONES AUXILIARES ESENCIALES
 
@@ -286,16 +286,6 @@ int drawGameModeMenu() {
         "Volver"
     };
     
-    /*
-    * Descripciones detalladas de cada modalidad
-    */
-    std::vector<std::string> descriptions = {
-        "Experiencia Pac-Man original. Velocidad normal, 3 vidas, IA tradicional",
-        "Los fantasmas son 50% mas rapidos.",
-        "Juega con un amigo. Segundo jugador controla fantasma especial",
-        "Regresar al menu principal sin seleccionar modalidad"
-    };
-    
     int choice = 0;
     int key;
 
@@ -326,8 +316,6 @@ int drawGameModeMenu() {
                 
                 // Mostrar descripción detallada de la opción seleccionada
                 attron(COLOR_PAIR(2));
-                print_centered(y_pos + 1, descriptions[i]);
-                
                 
             } else {
                 // Opción no seleccionada
