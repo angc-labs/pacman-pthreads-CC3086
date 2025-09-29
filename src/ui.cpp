@@ -366,8 +366,8 @@ int drawGameModeMenu() {
                 return choice;
             case 'q':
             case 'Q':
-                return 3; // Volver al menú principal
-            case ' ': // Espacio también funciona como Enter
+                return 3;
+            case ' ':
                 return choice;
         }
     }
