@@ -7,6 +7,7 @@ ANGC 4600
 qqq 4270
 qqqqqqqq 4230
 qqqq 3890
+qqqqqqqq 3820
 QQQQ 3810
 ANGC 3700
 ANGC 3600
@@ -40,8 +41,8 @@ ANG 1190
 ANG 1030
 qqqqqqqqqqq 920
 angc 910
-qqqq 420
 qqqqqqqqq 420
+qqqq 420
 ANG 310
 asasas 300
 qqq 180
@@ -49,9 +50,9 @@ qqqqqqqqqq 80
 asas 50
 aaaa 40
 aaaass 20
-QQQQ 10
 dddd 10
 qqqq 10
 sdsdsd 10
 qqqqqqqqqqqqqqq 10
 QQQQQQQQ 10
+QQQQ 10

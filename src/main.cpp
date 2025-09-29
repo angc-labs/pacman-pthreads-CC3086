@@ -22,7 +22,7 @@ struct GhostArgs {
 };
 
 // FUNCION DE ENTRADA PARA EL HILO DE CADA FANTASMA
-void* pacman_update(void* arg) {
+void* ghost_update(void* arg) {
     GhostArgs* args = static_cast<GhostArgs*>(arg);
 
     while (*args->running) {
