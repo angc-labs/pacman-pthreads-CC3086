@@ -45,7 +45,12 @@ void closeNcurses() {
         * Flechas 
         * Enter para seleccionar */
 int drawMainMenu() {
-    std::vector<std::string> options = {"Iniciar Juego","Instrucciones","Ver puntaje","Salir"};
+    std::vector<std::string> options = 
+    {"Iniciar Juego",
+        "Instrucciones",
+        "Ver puntaje",
+        "Salir"};
+
     int choice = 0;
     int key;
 
@@ -69,7 +74,7 @@ int drawMainMenu() {
             }
         }
         
-        print_centered(15, "\t   Usa las flechas ⬆ ⬇ ️para navegar y Enter para seleccionar");
+        print_centered(15, "\t   Usa las flechas para navegar y Enter para seleccionar");
 
         refresh();
 
@@ -264,4 +269,106 @@ std::string getPlayerName() {
     move(18, 10); clrtoeol();
 
     return playerName;
+}
+
+/*
+* Pantalla para escojer modalidad de juego
+*/
+
+int drawGameModeMenu() {
+    /*
+    * Menu de selección de modalidad de juego 
+    */
+    std::vector<std::string> options = {
+        "Modo Clasico",
+        "Fantasmas Mas Rapidos", 
+        "Dos Jugadores",
+        "Volver"
+    };
+    
+    /*
+    * Descripciones detalladas de cada modalidad
+    */
+    std::vector<std::string> descriptions = {
+        "Experiencia Pac-Man original. Velocidad normal, 3 vidas, IA tradicional",
+        "Los fantasmas son 50% mas rapidos.",
+        "Juega con un amigo. Segundo jugador controla fantasma especial",
+        "Regresar al menu principal sin seleccionar modalidad"
+    };
+    
+    int choice = 0;
+    int key;
+
+    while (true) {
+        clear();
+
+        // Título principal con mejor presentación
+        attron(COLOR_PAIR(1) | A_BOLD);
+        print_centered(3, "MODALIDADES DE JUEGO");
+        print_centered(4, "=====================");
+        attroff(COLOR_PAIR(1) | A_BOLD);
+
+        // Instrucciones mejoradas
+        attron(COLOR_PAIR(3) | A_BOLD);
+        print_centered(6, "CONTROLES:");
+        attroff(COLOR_PAIR(2) | A_BOLD);
+        print_centered(7, "Flechas: Navegar   ENTER: Seleccionar   Q: Volver");
+
+        // Dibujo de las opciones con mejor formato
+        for (size_t i = 0; i < options.size(); ++i) {
+            int y_pos = 10 + i * 3;
+            
+            if (i == choice) {
+                // Opción seleccionada - resaltada
+                attron(A_REVERSE | A_BOLD);
+                print_centered(y_pos, options[i]);
+                attroff(A_REVERSE | A_BOLD);
+                
+                // Mostrar descripción detallada de la opción seleccionada
+                attron(COLOR_PAIR(2));
+                print_centered(y_pos + 1, descriptions[i]);
+                
+                
+            } else {
+                // Opción no seleccionada
+                attron(COLOR_PAIR(1) | A_BOLD);
+                print_centered(y_pos, options[i]);
+                attroff(COLOR_PAIR(2));
+            }
+        }
+        
+        attron(COLOR_PAIR(3) | A_BOLD);
+        std::string footer = "Seleccionado: " + options[choice];
+        if (choice == 3) {
+            footer += " - Presiona ENTER para confirmar";
+        } else {
+            footer += " - Presiona ENTER para jugar";
+        }
+        
+        print_centered(23, footer);
+        attroff(COLOR_PAIR(3) | A_BOLD);
+
+        refresh();
+        key = getch();
+
+        switch (key) {
+            case KEY_UP:
+            case 'w':
+            case 'W':
+                choice = (choice - 1 + options.size()) % options.size();
+                break;
+            case KEY_DOWN:
+            case 's':
+            case 'S':
+                choice = (choice + 1) % options.size();
+                break;
+            case 10: // Enter
+                return choice;
+            case 'q':
+            case 'Q':
+                return 3; // Volver al menú principal
+            case ' ': // Espacio también funciona como Enter
+                return choice;
+        }
+    }
 }
