@@ -1,17 +1,153 @@
 /* Descripción del archivo: Lógica para dibujar las pantallas declaradas en ui.h con ncurses */
 #define _XOPEN_SOURCE_EXTENDED
 
+#include <vector> // Para std::vector en el menú
+#include <string> // Para std::string
+#include <unistd.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <list>
 #include <cwchar>
 #include <codecvt>
-
 #include "../headers/ui.h"
-#include <vector>
-#include <string>
 #include <locale.h>
 #include <ncursesw/curses.h>
 #include "../headers/highscore.h" // Para incluir las declaraciones de las funciones
 
 // DECLARACIÓN DE FUNCIONES AUXILIARES ESENCIALES
+
+// Música en el juego
+pid_t music_pid = -1;
+pid_t move_sound_pid = -1; // PID del sonido de movimiento
+pid_t eat_sound_pid = -1; // PID del sonido de comer punto
+pid_t die_sound_pid = -1; // PID del sonido de morir
+pid_t gameover_sound_pid = -1; // PID del sonido de game over
+std::list<pid_t> sound_pids; // Lista para almacenar los PIDs de los sonidos
+
+void start_music() { // Iniciar música de fondo (en bucle)
+    if (music_pid == -1) {
+        music_pid = fork();
+        if (music_pid == 0) {
+            // Redirige stdout y stderr para que no se muestren en ncurses
+            execlp("sh", "sh", "-c", "while true; do mpg123 -q ./resources/start.mp3 > /dev/null 2>&1; done", (char *)NULL);
+            _exit(1);
+        }
+    }
+}
+
+void stop_music() { // Detener música de fondo
+    if (music_pid != -1) {
+        kill(music_pid, SIGTERM);
+        waitpid(music_pid, NULL, 0);
+        music_pid = -1;
+    }
+    // Detener todos los sonidos activos
+    for (pid_t pid : sound_pids) {
+        kill(pid, SIGTERM);
+        waitpid(pid, NULL, 0);
+    }
+
+    if (move_sound_pid != -1) {
+        kill(move_sound_pid, SIGTERM);
+        waitpid(move_sound_pid, NULL, 0);
+        move_sound_pid = -1;
+    }
+
+    if (eat_sound_pid != -1) {
+        kill(eat_sound_pid, SIGTERM);
+        waitpid(eat_sound_pid, NULL, 0);
+        eat_sound_pid = -1;
+    }
+
+    if (die_sound_pid != -1) {
+        kill(die_sound_pid, SIGTERM);
+        waitpid(die_sound_pid, NULL, 0);
+        die_sound_pid = -1;
+    }
+
+    if (gameover_sound_pid != -1) {
+        kill(gameover_sound_pid, SIGTERM);
+        waitpid(gameover_sound_pid, NULL, 0);
+        gameover_sound_pid = -1;
+    }
+
+    sound_pids.clear();
+}
+
+bool is_music_playing() { // Verificar si la música está sonando
+    return music_pid != -1;
+}
+
+// Sonidos de efectos
+void play_sound(const char* sound_file) { // Función genérica para reproducir un sonido
+    pid_t sound_pid = fork();
+
+    if (sound_pid == 0) {
+        //("sh", "sh", "-c", "while true; do mpg123 -q ./resources/start.mp3 > /dev/null 2>&1; done", (char *)NULL)
+        execlp("sh", "sh", "-c", "mpg123 -q sound_file > /dev/null 2>&1;", (char *)NULL); //("mpg123", "mpg123", "-q", sound_file, (char *)NULL)
+        _exit(1);
+    } else if (sound_pid > 0) {
+        sound_pids.push_back(sound_pid); // Guarda el PID
+    }
+}
+
+void play_move_sound() { // Sonido de movimiento de fantasmas
+    // Si hay un sonido de movimiento activo, detenlo
+    if (move_sound_pid != -1) {
+        kill(move_sound_pid, SIGTERM);
+        waitpid(move_sound_pid, NULL, 0);
+        move_sound_pid = -1;
+    }
+    move_sound_pid = fork();
+    if (move_sound_pid == 0) {
+        execlp("sh", "sh", "-c", "mpg123 -q ./resources/move.mp3 > /dev/null 2>&1;", (char *)NULL); //("mpg123", "mpg123", "-q", "./resources/move.mp3", (char *)NULL)
+        _exit(1);
+    }
+}
+
+void play_eat_sound() { // Sonido de comer punto
+    if (eat_sound_pid != -1) {
+        kill(eat_sound_pid, SIGTERM);
+        waitpid(eat_sound_pid, NULL, 0);
+        eat_sound_pid = -1;
+    }
+    eat_sound_pid = fork();
+    if (eat_sound_pid == 0) {
+        execlp("sh", "sh", "-c", "mpg123 -q ./resources/eat.mp3 > /dev/null 2>&1;", (char *)NULL); //("mpg123", "mpg123", "-q", "./resources/eat.mp3", (char *)NULL)
+        _exit(1);
+    }
+}
+
+void play_die_sound() { // Sonido de morir
+    if (die_sound_pid != -1) {
+        kill(die_sound_pid, SIGTERM);
+        waitpid(die_sound_pid, NULL, 0);
+        die_sound_pid = -1;
+    }
+    die_sound_pid = fork();
+    if (die_sound_pid == 0) {
+        execlp("sh", "sh", "-c", "mpg123 -q ./resources/die.mp3 > /dev/null 2>&1;", (char *)NULL); //("mpg123", "mpg123", "-q", "./resources/die.mp3", (char *)NULL)
+        _exit(1);
+    }
+}
+
+void play_powerup_sound() { // Sonido de power-up
+    play_sound("./resources/powerup.mp3");
+}
+
+void play_gameover_sound() { // Sonido de game over
+    if (gameover_sound_pid != -1) {
+        kill(gameover_sound_pid, SIGTERM);
+        waitpid(gameover_sound_pid, NULL, 0);
+        gameover_sound_pid = -1;
+    }
+    gameover_sound_pid = fork();
+    if (gameover_sound_pid == 0) {
+        execlp("sh", "sh", "-c", "mpg123 -q ./resources/gameover.mp3 > /dev/null 2>&1;", (char *)NULL); //("mpg123", "mpg123", "-q", "./resources/gameover.mp3", (char *)NULL)
+        _exit(1);
+    }
+}
 
 // Centralización del texto en la pantalla
 void print_centered(int starty, const std::string& text) {
@@ -43,9 +179,11 @@ void closeNcurses() {
    - Implementación de menú principal y navegación mediante:
         * Teclas WASD
         * Flechas 
-        * Enter para seleccionar */
+        * Enter para seleccionar
+        * Tecla 'm' para alternar música de fondo
+*/
 int drawMainMenu() {
-    std::vector<std::string> options = 
+    std::vector<std::string> options =
     {"Iniciar Juego",
         "Instrucciones",
         "Ver puntaje",
@@ -74,7 +212,7 @@ int drawMainMenu() {
             }
         }
         
-        print_centered(15, "\t   Usa las flechas para navegar y Enter para seleccionar");
+        print_centered(15, "\tUsa las flechas ⬆️⬇️  para navegar y Enter 🔴  para seleccionar");
 
         refresh();
 
@@ -91,6 +229,13 @@ int drawMainMenu() {
                 break;
             case 10: // Enter = 10 en código ASCII
                 return choice; // Devuelve 0 o 1
+            case 'm': // Tecla 'm' para alternar música
+                if (is_music_playing()) { // Si la música está sonando, detenerla
+                    stop_music();
+                }else { // Si no está sonando, iniciarla
+                    start_music();
+                }
+                break;
         }
     }
 }
@@ -271,25 +416,18 @@ std::string getPlayerName() {
     return playerName;
 }
 
+/*
+* Pantalla para escojer modalidad de juego
+*/
+
 int drawGameModeMenu() {
     /*
     * Menu de selección de modalidad de juego 
     */
     std::vector<std::string> options = {
-        "Modo Clasico",
-        "Fantasmas Mas Rapidos", 
-        "Dos Jugadores",
+        "Modo clasico",
+        "Dos jugadores",
         "Volver"
-    };
-    
-    /*
-    * Descripciones detalladas de cada modalidad
-    */
-    std::vector<std::string> descriptions = {
-        "Experiencia Pac-Man original. Velocidad normal, 3 vidas, IA tradicional",
-        "Los fantasmas son 50% mas rapidos.",
-        "Juega con un amigo. Segundo jugador controla fantasma especial",
-        "Regresar al menu principal sin seleccionar modalidad"
     };
     
     int choice = 0;
@@ -322,8 +460,6 @@ int drawGameModeMenu() {
                 
                 // Mostrar descripción detallada de la opción seleccionada
                 attron(COLOR_PAIR(2));
-                print_centered(y_pos + 1, descriptions[i]);
-                
                 
             } else {
                 // Opción no seleccionada
