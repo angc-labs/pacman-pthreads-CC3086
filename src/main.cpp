@@ -265,7 +265,7 @@ int gameLoop(int gameMode) {
             PowerUp* pu = dynamic_cast<PowerUp*>(obj);
             if (pu) {
                 pu->activarEfecto();
-                mapa.addScore(200);
+                mapa.addScore(1000);
                 mapa.clearArea(pacman.getX(), pacman.getY());
             }
         }
