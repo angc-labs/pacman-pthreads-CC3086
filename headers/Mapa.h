@@ -31,8 +31,9 @@ public:
     void setXPuente(int x, int size);
     void setVerticalLine(int x, int startY, int endY);
     void setHorizontalLine(int y, int startX, int endX);
-    Object* getObjectAt(int x, int y);
-    bool isWall(int x, int y);
+    Object* getObjectAt(int x, int y) const; //CAMBIOS
+    bool isWall(int x, int y) const; //CAMBIOS
+    std::pair<int, int> findFreeCellNear(int cx, int cy) const; //CAMBIOS
 
     // Getters y setters
     int getScore() const;

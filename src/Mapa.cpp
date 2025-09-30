@@ -48,7 +48,7 @@ Mapa::~Mapa() {
     powerups.clear();
 }
 
-void Mapa::generarMapa() {
+/*void Mapa::generarMapa() {
     for (int y = 0; y < alto; y++) {
         for (int x = 0; x < ancho; x++) {
             if (mapa[y][x] != nullptr) {
@@ -89,6 +89,89 @@ void Mapa::generarMapa() {
         }
         mapa[y][x] = new PowerUp(x, y, "+10");
     }
+}*/
+
+void Mapa::generarMapa() {
+    // Limpiar objetos previos en el mapa
+    for (int y = 0; y < alto; y++) {
+        for (int x = 0; x < ancho; x++) {
+            if (mapa[y][x] != nullptr) {
+                delete mapa[y][x];
+                mapa[y][x] = nullptr;
+            }
+        }
+    }
+
+    // Limpiar power-ups previos
+    for (PowerUp* power : powerups) {
+        delete power;
+    }
+    powerups.clear();
+
+    // Paredes del borde y puntos en el resto
+    for (int y = 0; y < alto; y++) {
+        for (int x = 0; x < ancho; x++) {
+            if (y == 0 || y == alto - 1 || x == 0 || x == ancho - 1) {
+                mapa[y][x] = new Pared(x, y);
+            } else {
+                mapa[y][x] = new Punto(x, y);
+            }
+        }
+    }
+
+    // Crear la caja de los fantasmas en el centro
+    int cx = ancho / 2;
+    int cy = alto / 2;
+    for (int y = cy - 2; y <= cy + 2; y++) {
+        for (int x = cx - 5; x <= cx + 5; x++) {
+            if (y == cy - 2 || y == cy + 2 || x == cx - 5 || x == cx + 5) {
+                mapa[y][x] = new Pared(x, y);
+            } else {
+                clearArea(x, y);
+            }
+        }
+    }
+
+    // Puerta conectada al pasillo central
+    clearArea(cx, cy - 2);
+    clearArea(cx, cy - 3);
+
+    // Línea horizontal central PARTIDA (para no encerrar a Pac-Man)
+    int yCentral = cy;  // misma altura que la caja
+
+    // Parte izquierda del muro
+    setHorizontalLine(yCentral, 2, cx - 7);
+
+    // Parte derecha del muro
+    setHorizontalLine(yCentral, cx + 7, ancho - 3);
+
+    // Dejamos libre la zona frente a la caja
+    clearArea(cx, yCentral);
+    clearArea(cx - 1, yCentral);
+    clearArea(cx + 1, yCentral);
+
+    // Después de esto siguen los muros verticales y horizontales segmentados
+    setVerticalLine(ancho / 4, 2, cy - 4);
+    setVerticalLine(ancho / 4, cy + 4, alto - 3);
+    setVerticalLine(3 * ancho / 4, 2, cy - 4);
+    setVerticalLine(3 * ancho / 4, cy + 4, alto - 3);
+
+    setHorizontalLine(alto / 4, 2, cx - 6);
+    setHorizontalLine(alto / 4, cx + 6, ancho - 3);
+    setHorizontalLine(3 * alto / 4, 2, cx - 6);
+    setHorizontalLine(3 * alto / 4, cx + 6, ancho - 3);
+
+    // Pasillos centrales hacia afuera
+    clearArea(cx, 1);         // salida superior
+    clearArea(cx, alto - 2);  // salida inferior
+    clearArea(1, cy);         // salida izquierda
+    clearArea(ancho - 2, cy); // salida derecha
+
+    // Power-ups en las esquinas
+    mapa[1][1] = new PowerUp(1, 1, "+10");
+    mapa[1][ancho - 2] = new PowerUp(ancho - 2, 1, "+10");
+    mapa[alto - 2][1] = new PowerUp(1, alto - 2, "+10");
+    mapa[alto - 2][ancho - 2] = new PowerUp(ancho - 2, alto - 2, "+10");
 }
 
 void Mapa::setPuente(int y, int size) {
@@ -148,14 +231,14 @@ void Mapa::setHorizontalLine(int y, int startX, int endX) {
     }
 }
 
-Object* Mapa::getObjectAt(int x, int y) {
+Object* Mapa::getObjectAt(int x, int y) const { //CAMBIOS
     if (x < 0 || x >= ancho || y < 0 || y >= alto) {
         return nullptr;
     }
     return mapa[y][x];
 }
 
-bool Mapa::isWall(int x, int y) {
+bool Mapa::isWall(int x, int y) const { //CAMBIOS
     Object* obj = getObjectAt(x, y);
     return obj && dynamic_cast<Pared*>(obj) != nullptr;
 }
@@ -204,6 +287,20 @@ void Mapa::loseLife() {
     if (vidas > 0) {
         vidas--;
     }
+}
+
+std::pair<int,int> Mapa::findFreeCellNear(int cx, int cy) const { //CAMBIOS
+    int rango = 2; // busca celdas libres en un cuadrado alrededor del centro
+    for (int dy = -rango; dy <= rango; dy++) {
+        for (int dx = -rango; dx <= rango; dx++) {
+            int nx = cx + dx;
+            int ny = cy + dy;
+            if (!isWall(nx, ny) && mapa[ny][nx] == nullptr) {
+                return {nx, ny};
+            }
+        }
+    }
+    return {cx, cy}; // fallback
 }
 
 void Mapa::draw() {

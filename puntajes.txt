@@ -31,8 +31,8 @@ QQQQQQQQQ 2320
 qqqqqqqqq 2310
 qqqqqqqq 2300
 ANG 2010
-QQQQQ 1910
 QQQQQQQQQQ 1910
+QQQQQ 1910
 SSSS 1890
 QQQQQ 1770
 NAG 1740
@@ -66,6 +66,11 @@ QQQQQQQQ 10
 QQQQ 10
 dddd 10
 qqqq 10
+<<<<<<< Updated upstream
 sdsdsd 10
 nasas 10
 qqqqqqqqqqqqqqq 10
+=======
+qqqq 10
+qqqq 0
+>>>>>>> Stashed changes
