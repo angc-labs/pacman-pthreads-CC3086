@@ -17,6 +17,7 @@ pthread_mutex_t render_mutex = PTHREAD_MUTEX_INITIALIZER;
 struct GhostArgs {
     Ghost* ghost;
     Mapa* mapa;
+    Pacman* pacman;
     std::vector<Ghost*>* allGhosts;
     bool* running;
     pthread_mutex_t* game_mutex;
@@ -29,7 +30,7 @@ void* ghost_update(void* arg) {
 
     while (*args->running) {
         pthread_mutex_lock(args->game_mutex);
-        args->ghost->update(*args->allGhosts);
+        args->ghost->update(*args->allGhosts, args->pacman);
         pthread_mutex_unlock(args->game_mutex);
         usleep(100);
     }
@@ -43,7 +44,7 @@ void* ghost_player_update(void* arg) {
 
     while (*args->running) {
         pthread_mutex_lock(args->game_mutex);
-        args->ghost->update(*args->allGhosts);
+        args->ghost->update(*args->allGhosts, args->pacman);
         pthread_mutex_unlock(args->game_mutex);
     }
 
@@ -69,17 +70,17 @@ int gameLoop(int gameMode) {
 
     if (gameMode == 2) {
         fantasmas = {
-            new Ghost(cx - 2, cy, ALEATORIO, mapa),
-            new Ghost(cx, cy, ALEATORIO, mapa),
-            new Ghost(cx + 2, cy, ALEATORIO, mapa)
+            new Ghost(cx - 2, cy, ALEATORIO, mapa, 0),
+            new Ghost(cx, cy, ALEATORIO, mapa, 1),
+            new Ghost(cx + 2, cy, ALEATORIO, mapa, 2)
         };
-        fantasma_controlable = new Ghost(cx, cy + 1, CONTROLABLE, mapa);
+        fantasma_controlable = new Ghost(cx, cy + 1, CONTROLABLE, mapa, 4);
     } else {
         fantasmas = {
-            new Ghost(cx - 2, cy, ALEATORIO, mapa),
-            new Ghost(cx, cy, ALEATORIO, mapa),
-            new Ghost(cx + 2, cy, ALEATORIO, mapa),
-            new Ghost(cx, cy + 1, ALEATORIO, mapa)
+            new Ghost(cx - 2, cy, ALEATORIO, mapa, 0),
+            new Ghost(cx, cy, ALEATORIO, mapa, 1),
+            new Ghost(cx + 2, cy, ALEATORIO, mapa, 2),
+            new Ghost(cx, cy + 1, ALEATORIO, mapa, 3)
         };
     }
 
@@ -107,6 +108,7 @@ int gameLoop(int gameMode) {
         GhostArgs args;
         args.ghost = fantasmas[i];
         args.mapa = &mapa;
+        args.pacman = &pacman;
         args.allGhosts = &allGhosts;
         args.running = &running;
         args.game_mutex = &game_mutex;
@@ -127,6 +129,7 @@ int gameLoop(int gameMode) {
         controlableArgs = new GhostArgs{
             fantasma_controlable,
             &mapa,
+            &pacman,
             &allGhosts,
             &running,
             &game_mutex,
@@ -165,7 +168,7 @@ int gameLoop(int gameMode) {
         mapa.draw();
         pacman.draw();
 
-        // Mostrar modo de juego (una sola vez)
+        // Mostrar modo de juego
         mvprintw(maxY - 3, maxX - 20, "Modo: %s", modeNames[gameMode].c_str());
 
         // Dibujar todos los fantasmas
@@ -238,7 +241,12 @@ int gameLoop(int gameMode) {
                     // Resetear posiciones
                     int centerX = mapa.getAncho() / 2;
                     int centerY = mapa.getAlto() / 2;
-                    pacman.setPos(centerX, centerY);
+                    pacman.setPos(centerX, centerY + 6);
+                    
+                    // Respawnear fantasmas
+                    for (auto ghost : allGhosts) {
+                        if (ghost) ghost->respawn();
+                    }
                 }
             }
         }

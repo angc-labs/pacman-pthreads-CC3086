@@ -12,7 +12,7 @@ Pacman::Pacman(int x, int y, Mapa& map) :
     lastKey(0),
     mapa(map),
     frameCounter(0),
-    moveDelay(1000) {}
+    moveDelay(500) {}
 
 void Pacman::moveInput() {
     int key = getch();
@@ -22,13 +22,13 @@ void Pacman::moveInput() {
 }
 
 bool Pacman::checkCollision(int tempX, int tempY) const {
-    // Verificar límites del mapa
+    // Verificar lÃ­mites del mapa
     if (tempX <= 0 || tempX >= mapa.getAncho() - 1 ||
         tempY <= 0 || tempY >= mapa.getAlto() - 1) {
         return true;
     }
     
-    // Solo verificar si la posición exacta es una pared
+    // Solo verificar si la posiciÃ³n exacta es una pared
     return mapa.isWall(tempX, tempY);
 }
 
