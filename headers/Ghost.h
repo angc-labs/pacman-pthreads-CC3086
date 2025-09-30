@@ -1,7 +1,6 @@
 /*
  * Autor: Sarah Rachel Estrada Bonilla
  * Fecha de creación: 12/9/2025
- * Modificado: Sistema de comportamiento mejorado
  */
 
 #ifndef GHOST_H
@@ -63,7 +62,7 @@ private:
     void exitBox();
     std::pair<int, int> getChaseTarget(Pacman* pacman);
     std::pair<int, int> getScatterTarget();
-    std::pair<int, int> getFrightenedTarget(Pacman* pacman); // 🚀 NUEVA FUNCIÓN: objetivo de huida
+    std::pair<int, int> getFrightenedTarget(Pacman* pacman);
 };
 
 #endif

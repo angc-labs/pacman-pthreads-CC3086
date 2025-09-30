@@ -1,8 +1,6 @@
 /*
  * Autor: Sarah Rachel Estrada Bonilla
  * Fecha de creación: 12/9/2025
- * Modificado: Sistema de comportamiento tipo Pac-Man original
- * Ajuste: Fantasmas nunca se quedan quietos, buscan siempre rutas alternativas
  */
 
 #include "../headers/Ghost.h"
