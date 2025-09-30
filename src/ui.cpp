@@ -212,7 +212,7 @@ int drawMainMenu() {
             }
         }
         
-        print_centered(15, "Usa las flechas para navegar y Enter para seleccionar");
+        print_centered(15, "\tUsa las flechas ⬆️⬇️  para navegar y Enter 🔴  para seleccionar");
 
         refresh();
 
@@ -426,9 +426,8 @@ int drawGameModeMenu() {
     * Menu de selección de modalidad de juego
     */
     std::vector<std::string> options = {
-        "Modo Clasico",
-        "Fantasmas Mas Rapidos",
-        "Dos Jugadores",
+        "Modo clasico",
+        "Dos jugadores",
         "Volver"
     };
 
