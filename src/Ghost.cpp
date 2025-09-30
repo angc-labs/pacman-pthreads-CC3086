@@ -3,7 +3,6 @@
  * Fecha de creación: 12/9/2025
  * Modificado: Sistema de comportamiento tipo Pac-Man original
  * Ajuste: Fantasmas nunca se quedan quietos, buscan siempre rutas alternativas
- * Nuevo: Estado FRIGHTENED -> huir de Pacman cuando tiene un power-up
  */
 
 #include "../headers/Ghost.h"
