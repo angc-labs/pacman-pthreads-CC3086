@@ -79,11 +79,54 @@ int gameLoop(int gameMode) {
     }
 
     Pacman pacman(15, 10, mapa);
-
-    // generar el mapa
+    // ===================================================
+    // GENERAR MAPA
+    // ===================================================
     mapa.generarMapa();
-    mapa.setVerticalLine(0.2 * mapa.getAncho(), 0.5 * mapa.getAlto(), mapa.getAlto());
-    mapa.setHorizontalLine(0.5 * mapa.getAlto(), 0.2 * mapa.getAncho(), 0.9 * mapa.getAncho());
+
+    mapa.setHorizontalLine(0.25 * mapa.getAlto(), 0.1 * mapa.getAncho(), 0.4 * mapa.getAncho());
+    mapa.setHorizontalLine(0.25 * mapa.getAlto(), 0.6 * mapa.getAncho(), 0.9 * mapa.getAncho());
+    mapa.setHorizontalLine(0.5 * mapa.getAlto(), 0.2 * mapa.getAncho(), 0.8 * mapa.getAncho());
+    mapa.setHorizontalLine(0.75 * mapa.getAlto(), 0.1 * mapa.getAncho(), 0.4 * mapa.getAncho());
+    mapa.setHorizontalLine(0.75 * mapa.getAlto(), 0.6 * mapa.getAncho(), 0.9 * mapa.getAncho());
+
+    mapa.clearArea(0.1 * mapa.getAncho(), 0.1 * mapa.getAlto());
+    mapa.clearArea(0.2 * mapa.getAncho(), 0.1 * mapa.getAlto());
+    mapa.clearArea(0.1 * mapa.getAncho(), 0.2 * mapa.getAlto());
+
+    // esquina superior derecha
+    mapa.clearArea(0.8 * mapa.getAncho(), 0.1 * mapa.getAlto());
+    mapa.clearArea(0.9 * mapa.getAncho(), 0.1 * mapa.getAlto());
+    mapa.clearArea(0.8 * mapa.getAncho(), 0.2 * mapa.getAlto());
+
+    // esquina inferior izquierda
+    mapa.clearArea(0.1 * mapa.getAncho(), 0.8 * mapa.getAlto());
+    mapa.clearArea(0.2 * mapa.getAncho(), 0.8 * mapa.getAlto());
+    mapa.clearArea(0.1 * mapa.getAncho(), 0.9 * mapa.getAlto());
+
+    // esquina inferior derecha - area abierta
+    mapa.clearArea(0.8 * mapa.getAncho(), 0.8 * mapa.getAlto());
+    mapa.clearArea(0.9 * mapa.getAncho(), 0.8 * mapa.getAlto());
+    mapa.clearArea(0.8 * mapa.getAncho(), 0.9 * mapa.getAlto());
+
+    for (int x = 0.4 * mapa.getAncho(); x < 0.6 * mapa.getAncho(); x++) {
+        for (int y = 0.4 * mapa.getAlto(); y < 0.6 * mapa.getAlto(); y++) {
+            mapa.clearArea(x, y);
+        }
+    }
+
+    // T vertical izquierda
+    mapa.setVerticalLine(0.2 * mapa.getAncho(), 0.4 * mapa.getAlto(), 0.6 * mapa.getAlto());
+    mapa.setHorizontalLine(0.4 * mapa.getAlto(), 0.2 * mapa.getAncho(), 0.35 * mapa.getAncho());
+
+    // T vertical derecha
+    mapa.setVerticalLine(0.8 * mapa.getAncho(), 0.4 * mapa.getAlto(), 0.6 * mapa.getAlto());
+    mapa.setHorizontalLine(0.6 * mapa.getAlto(), 0.65 * mapa.getAncho(), 0.8 * mapa.getAncho());
+
+    mapa.setPuente(0.3 * mapa.getAlto(), 3);
+    mapa.setPuente(0.7 * mapa.getAlto(), 3);
+    mapa.setXPuente(0.5 * mapa.getAncho(), 3);
+    // ===================================================
 
     // variable de control para los hilos
     bool running = true;
@@ -134,7 +177,7 @@ int gameLoop(int gameMode) {
         frameCounter++;
         ch = getch();
 
-        if (frameCounter ==5000) {
+        if (frameCounter ==1000) {
             clear();
             frameCounter=0;
         }
@@ -222,6 +265,7 @@ int gameLoop(int gameMode) {
             PowerUp* pu = dynamic_cast<PowerUp*>(obj);
             if (pu) {
                 pu->activarEfecto();
+                mapa.addScore(200);
                 mapa.clearArea(pacman.getX(), pacman.getY());
             }
         }

@@ -21,7 +21,7 @@ mapa(mapa) {
     tipo = t;
     estado = "normal";
     direction = 0;
-    moveDelay = (t == CONTROLABLE) ? 500 : 100;
+    moveDelay = (t == CONTROLABLE) ? 500 : 200;
     frameCounterDirection = 0;
     moveDirectionDelay = 25*moveDelay;
     lastKey = 0;
