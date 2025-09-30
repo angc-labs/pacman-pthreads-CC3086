@@ -62,14 +62,14 @@ int gameLoop(int gameMode) {
     std::vector<Ghost*> fantasmas;
     Ghost* fantasma_controlable = nullptr;
 
-    if (gameMode == 2) {
+    if (gameMode == 1) {
         fantasmas = {
             new Ghost(4, 10, ALEATORIO, mapa),
             new Ghost(4, 11, ALEATORIO, mapa),
             new Ghost(4, 12, ALEATORIO, mapa)
         };
         fantasma_controlable = new Ghost(4, 14, CONTROLABLE, mapa);
-    } else {
+    } else if (gameMode == 0) {
         fantasmas = {
             new Ghost(4, 10, ALEATORIO, mapa),
             new Ghost(4, 11, ALEATORIO, mapa),
@@ -142,9 +142,9 @@ int gameLoop(int gameMode) {
         //=================================
         // Control de música
         if (ch == 'm' || ch == 'M') {
-            if (is_music_playing()) { // Si la música está sonando, detenerla
+            if (is_music_playing()) {
                 stop_music();
-            } else { // Si no está sonando, iniciarla
+            } else {
                 start_music();
             }
         }
@@ -284,14 +284,13 @@ int gameLoop(int gameMode) {
 int main() {
     setupNcurses();
 
-    // bucle principal del menú
     while (true) {
         int menuChoice = drawMainMenu();
 
         if (menuChoice == 0) {
             int gameMode = drawGameModeMenu();
 
-            if (gameMode == 2) {
+            if (gameMode == 3 || gameMode == 2) {
                 continue;
             }
 
