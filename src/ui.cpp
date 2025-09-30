@@ -4,12 +4,12 @@
 #include <cwchar>
 #include <codecvt>
 
-#include "ui.h"
+#include "../headers/ui.h"
 #include <vector>
 #include <string>
 #include <locale.h>
 #include <ncursesw/curses.h>
-#include "highscore.h" // Para incluir las declaraciones de las funciones
+#include "../headers/highscore.h" // Para incluir las declaraciones de las funciones
 
 // DECLARACIÓN DE FUNCIONES AUXILIARES ESENCIALES
 
@@ -271,10 +271,6 @@ std::string getPlayerName() {
     return playerName;
 }
 
-/*
-* Pantalla para escojer modalidad de juego
-*/
-
 int drawGameModeMenu() {
     /*
     * Menu de selección de modalidad de juego 
@@ -366,8 +362,8 @@ int drawGameModeMenu() {
                 return choice;
             case 'q':
             case 'Q':
-                return 3; // Volver al menú principal
-            case ' ': // Espacio también funciona como Enter
+                return 3;
+            case ' ':
                 return choice;
         }
     }

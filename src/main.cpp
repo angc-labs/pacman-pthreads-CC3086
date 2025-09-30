@@ -7,124 +7,270 @@
 #include <unistd.h>
 #include <vector>
 #include <memory>
-#include "Ghost.h"
+#include "../headers/Ghost.h"
+#include <pthread.h>
 
 std::vector<int> puntajes;
+pthread_mutex_t game_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t render_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+struct GhostArgs {
+    Ghost* ghost;
+    Mapa* mapa;
+    std::vector<Ghost*>* allGhosts;
+    bool* running;
+    pthread_mutex_t* game_mutex;
+    pthread_mutex_t* render_mutex;
+};
+
+// FUNCION DE ENTRADA PARA EL HILO DE CADA FANTASMA
+void* ghost_update(void* arg) {
+    GhostArgs* args = static_cast<GhostArgs*>(arg);
+
+    while (*args->running) {
+        pthread_mutex_lock(args->game_mutex);
+        args->ghost->update(*args->allGhosts);
+        pthread_mutex_unlock(args->game_mutex);
+        usleep(100);
+    }
+
+    return nullptr;
+}
+
+// FUNCION DE ENTRADA PARA EL HILO DEL FANTASMA CONTROLABLE
+void* ghost_player_update(void* arg) {
+    GhostArgs* args = static_cast<GhostArgs*>(arg);
+
+    while (*args->running) {
+        pthread_mutex_lock(args->game_mutex);
+        args->ghost->update(*args->allGhosts);
+        pthread_mutex_unlock(args->game_mutex);
+    }
+
+    return nullptr;
+}
 
 int gameLoop(int gameMode) {
-    int ch;
+    int frameCounter = 0;
+    int ch = 0;
     nodelay(stdscr, TRUE);
 
+    // Inicialización de objetos
     Mapa mapa;
-    
     mapa.generarMapa(gameMode);
-    
+
+    // Calcular centro del mapa
     int cx = mapa.getAncho() / 2;
     int cy = mapa.getAlto() / 2;
-    
-    // Fantasmas dentro de la caja central
-    std::vector<Ghost*> fantasmas = {
-        new Ghost(cx - 2, cy, "1", mapa),
-        new Ghost(cx, cy, "2", mapa),
-        new Ghost(cx + 2, cy, "3", mapa)
-    };
-    
-    // Pacman fuera de la caja, abajo
+
+    // Crear fantasmas en la caja central según el modo
+    std::vector<Ghost*> fantasmas;
+    Ghost* fantasma_controlable = nullptr;
+
+    if (gameMode == 2) {
+        fantasmas = {
+            new Ghost(cx - 2, cy, ALEATORIO, mapa),
+            new Ghost(cx, cy, ALEATORIO, mapa),
+            new Ghost(cx + 2, cy, ALEATORIO, mapa)
+        };
+        fantasma_controlable = new Ghost(cx, cy + 1, CONTROLABLE, mapa);
+    } else {
+        fantasmas = {
+            new Ghost(cx - 2, cy, ALEATORIO, mapa),
+            new Ghost(cx, cy, ALEATORIO, mapa),
+            new Ghost(cx + 2, cy, ALEATORIO, mapa),
+            new Ghost(cx, cy + 1, ALEATORIO, mapa)
+        };
+    }
+
+    // Pacman fuera de la caja, más abajo
     Pacman pacman(cx, cy + 6, mapa);
 
-    // Ajustes según la modalidad seleccionada
-    switch (gameMode) {
-        case 0: // Modo Clásico
-            // Configuración por defecto 
-            break;
-            
-        case 1: // Fantasmas Más Rápidos
-            for (auto& fantasma : fantasmas) {
-                // Lógica para aumentar la velocidad de los fantasmas
-                // Puedes ajustar el moveDelay en Ghost si lo haces accesible
-            }
-            break;
-            
-        case 2: // Dos Jugadores
-            // Implementar lógica para el segundo jugador
-            break;
-    }
-    
-    // mapa.setVerticalLine(0.2 * mapa.getAncho(), 0.5 * mapa.getAlto(), mapa.getAlto());
-    // mapa.setHorizontalLine(0.5 * mapa.getAlto(), 0.2 * mapa.getAncho(), 0.9 * mapa.getAncho());
-    
-    // Mostrar información de la modalidad activa
+    // Información de modalidad
     std::vector<std::string> modeNames = {"CLASICO", "RAPIDO", "2 JUGADORES"};
-    int maxY, maxX;
-    getmaxyx(stdscr, maxY, maxX);
-    
-    while (ch != 'q' && ch != 'Q') {
+
+    // Variable de control para los hilos
+    bool running = true;
+
+    // Crear vector para hilos de fantasmas
+    std::vector<pthread_t> ghostThreads(fantasmas.size());
+    std::vector<GhostArgs> ghostArgs;
+
+    // Incluir fantasma controlable en el vector para colisiones
+    std::vector<Ghost*> allGhosts = fantasmas;
+    if (fantasma_controlable) {
+        allGhosts.push_back(fantasma_controlable);
+    }
+
+    // Configuración de hilos para fantasmas aleatorios
+    for (size_t i = 0; i < fantasmas.size(); i++) {
+        GhostArgs args;
+        args.ghost = fantasmas[i];
+        args.mapa = &mapa;
+        args.allGhosts = &allGhosts;
+        args.running = &running;
+        args.game_mutex = &game_mutex;
+        args.render_mutex = &render_mutex;
+        ghostArgs.push_back(args);
+    }
+
+    // Lanzar los hilos de fantasmas aleatorios
+    for (size_t i = 0; i < fantasmas.size(); i++) {
+        pthread_create(&ghostThreads[i], nullptr, ghost_update, &ghostArgs[i]);
+    }
+
+    // Lanzar hilo del fantasma controlable si existe
+    pthread_t fantasma_controlable_thread;
+    GhostArgs* controlableArgs = nullptr;
+
+    if (fantasma_controlable) {
+        controlableArgs = new GhostArgs{
+            fantasma_controlable,
+            &mapa,
+            &allGhosts,
+            &running,
+            &game_mutex,
+            &render_mutex
+        };
+        pthread_create(&fantasma_controlable_thread, nullptr, ghost_player_update, controlableArgs);
+    }
+
+    // Game loop principal
+    while (ch != 113 && ch != 81) { // 'q' o 'Q'
+        frameCounter++;
         ch = getch();
 
+        // Obtener dimensiones de pantalla DENTRO del loop
+        int maxY, maxX;
+        getmaxyx(stdscr, maxY, maxX);
+
+        if (frameCounter == 5000) {
+            clear();
+            frameCounter = 0;
+        }
+
+        // Guardar posiciones anteriores de fantasmas
+        std::vector<std::pair<int, int>> ghost_old_positions;
+        pthread_mutex_lock(&game_mutex);
+        for (auto f : allGhosts) {
+            if (f) {
+                ghost_old_positions.push_back({f->getX(), f->getY()});
+            }
+        }
+        pthread_mutex_unlock(&game_mutex);
+
+        // Render
+        pthread_mutex_lock(&game_mutex);
+        pthread_mutex_lock(&render_mutex);
         mapa.draw();
         pacman.draw();
 
+        // Mostrar modo de juego (una sola vez)
         mvprintw(maxY - 3, maxX - 20, "Modo: %s", modeNames[gameMode].c_str());
 
-        int oldpacX = pacman.getX();
-        int oldpacY = pacman.getY();
+        // Dibujar todos los fantasmas
+        for (auto f : allGhosts) {
+            if (f) f->draw();
+        }
+        pthread_mutex_unlock(&render_mutex);
+        pthread_mutex_unlock(&game_mutex);
 
-        pacman.update();
-        for (const auto& fantasma : fantasmas) {
-            int oldfantasmaX = fantasma->getX();
-            int oldfantasmaY = fantasma->getY();
+        // Limpiar posiciones anteriores de fantasmas
+        pthread_mutex_lock(&game_mutex);
+        for (size_t i = 0; i < allGhosts.size() && i < ghost_old_positions.size(); i++) {
+            if (allGhosts[i] &&
+                (allGhosts[i]->getX() != ghost_old_positions[i].first ||
+                 allGhosts[i]->getY() != ghost_old_positions[i].second)) {
 
-            fantasma->draw();
-            fantasma->update(fantasmas);
-
-            if (oldfantasmaX != fantasma->getX() || oldfantasmaY != fantasma->getY()) {
-                Object* prevObj = mapa.getObjectAt(oldfantasmaX, oldfantasmaY);
+                pthread_mutex_lock(&render_mutex);
+                Object* prevObj = mapa.getObjectAt(ghost_old_positions[i].first, ghost_old_positions[i].second);
                 char prevSprite = (prevObj ? prevObj->sprite : ' ');
-                mvaddch(oldfantasmaY, oldfantasmaX, prevSprite);
+                mvaddch(ghost_old_positions[i].second, ghost_old_positions[i].first, prevSprite);
+                pthread_mutex_unlock(&render_mutex);
+            }
+        }
+        pthread_mutex_unlock(&game_mutex);
+
+        int oldX = pacman.getX();
+        int oldY = pacman.getY();
+
+        // Actualización de Pacman protegida por mutex
+        pthread_mutex_lock(&game_mutex);
+        pacman.update();
+        pthread_mutex_unlock(&game_mutex);
+
+        // Limpiar posición anterior de Pacman
+        if (oldX != pacman.getX() || oldY != pacman.getY()) {
+            pthread_mutex_lock(&render_mutex);
+            Object* prevObj = mapa.getObjectAt(oldX, oldY);
+            char prevSprite = (prevObj ? prevObj->sprite : ' ');
+            mvaddch(oldY, oldX, prevSprite);
+            pthread_mutex_unlock(&render_mutex);
+        }
+
+        // Colisiones de Pacman con objetos
+        pthread_mutex_lock(&game_mutex);
+        Object* obj = mapa.getObjectAt(pacman.getX(), pacman.getY());
+
+        if (obj && dynamic_cast<Punto*>(obj)) {
+            mapa.addScore(10);
+            mapa.clearArea(pacman.getX(), pacman.getY());
+        } else if (obj && dynamic_cast<PowerUp*>(obj)) {
+            PowerUp* pu = dynamic_cast<PowerUp*>(obj);
+            if (pu) {
+                pu->activarEfecto();
+                mapa.clearArea(pacman.getX(), pacman.getY());
             }
         }
 
-        int pacX = pacman.getX();
-        int pacY = pacman.getY();
-
-        if (oldpacX != pacX || oldpacY != pacY) {
-            Object* prevObj = mapa.getObjectAt(oldpacX, oldpacY);
-            char prevSprite = (prevObj ? prevObj->sprite : ' ');
-            mvaddch(oldpacY, oldpacX, prevSprite);
-        }
-
-        Object* obj = mapa.getObjectAt(pacX, pacY);
-        if (obj && dynamic_cast<Punto*>(obj)) {
-            mapa.addScore(10);
-            mapa.clearArea(pacX, pacY);
-        } else if (obj && dynamic_cast<PowerUp*>(obj)) {
-            PowerUp* pu = dynamic_cast<PowerUp*>(obj);
-            pu->activarEfecto();
-            mapa.clearArea(pacX, pacY);
-        }
-
-        for (const auto& fantasma : fantasmas) {
-            if (fantasma && fantasma->getX() == pacX && fantasma->getY() == pacY) {
+        // Colisiones pacman vs fantasmas
+        bool gameOver = false;
+        for (auto f : allGhosts) {
+            if (f && f->getX() == pacman.getX() && f->getY() == pacman.getY()) {
                 mapa.loseLife();
                 if (mapa.getVidas() <= 0) {
-                    refresh();
-                    ch = 'q';
+                    // Game over
                     puntajes.push_back(mapa.getScore());
+                    ch = 'q';
+                    gameOver = true;
+                    break;
                 } else {
+                    // Resetear posiciones
                     int centerX = mapa.getAncho() / 2;
                     int centerY = mapa.getAlto() / 2;
                     pacman.setPos(centerX, centerY);
                 }
             }
         }
+        pthread_mutex_unlock(&game_mutex);
+
+        if (gameOver) {
+            refresh();
+            break;
+        }
 
         refresh();
     }
-    
-    for (auto& fantasma : fantasmas) {
-        delete fantasma;
+
+    // Señal para detener los hilos
+    running = false;
+
+    // Esperar a que terminen los hilos
+    for (size_t i = 0; i < fantasmas.size(); i++) {
+        pthread_join(ghostThreads[i], nullptr);
+    }
+
+    if (fantasma_controlable) {
+        pthread_join(fantasma_controlable_thread, nullptr);
+        delete controlableArgs;
+        delete fantasma_controlable;
+    }
+
+    for (auto& f : fantasmas) {
+        delete f;
     }
     fantasmas.clear();
+
     nodelay(stdscr, FALSE);
     return mapa.getScore();
 }
@@ -137,22 +283,14 @@ int main() {
 
         if (menuChoice == 0) {
             int gameMode = drawGameModeMenu();
-            
-            if (gameMode == 3) {
+
+            if (gameMode == -1) {
                 continue;
             }
-            
-            std::vector<std::string> modeNames = {
-                "Modo Clasico", 
-                "Fantasmas Más Rápidos", 
-                "Dos Jugadores"
-            };
-            
+
             clear();
-            
             int final_score = gameLoop(gameMode);
             handle_end_of_game(final_score);
-            
         } else if (menuChoice == 1) {
             drawInstructions();
         } else if (menuChoice == 2) {
@@ -161,6 +299,9 @@ int main() {
             break;
         }
     }
+    
+    pthread_mutex_destroy(&game_mutex);
+    pthread_mutex_destroy(&render_mutex);
 
     closeNcurses();
     return 0;

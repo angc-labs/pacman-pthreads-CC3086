@@ -12,10 +12,16 @@
 #include <string>
 #include <ctime>
 
+enum GhostType {
+    ALEATORIO,
+    CONTROLABLE
+};
+
 class Ghost : public Object {
 private:
     int velocidad;
-    std::string tipo;
+    int lastKey;
+    GhostType tipo;
     std::string estado;
     Mapa& mapa;
     int direction;
@@ -25,12 +31,13 @@ private:
     int moveDirectionDelay;
 
 public:
-    Ghost(int x, int y, std::string t, Mapa& mapa);
+    Ghost(int x, int y, GhostType t, Mapa& mapa);
     void setEstado(const std::string& nuevoEstado);
+    void moveInput();
     void respawn();
     void update(const std::vector<Ghost*>& ghosts);
     std::string getEstado() const;
-    std::string getTipo() const;
+    GhostType getTipo() const;
 
 private:
     bool checkCollision(int tempX, int tempY, const std::vector<Ghost*>& ghosts) const;
