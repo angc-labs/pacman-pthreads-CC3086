@@ -1,10 +1,10 @@
 #include <iostream>
 #include <ncurses.h>
-#include "ui.h" // Para usar las funciones drawMainMenu
+#include "ui.h"
 #include "Mapa.h"
 #include "Pacman.h"
 #include "Punto.h"
-#include <unistd.h> // Necesario para la función usleep()
+#include <unistd.h>
 #include <vector>
 #include <memory>
 #include "Ghost.h"
@@ -13,20 +13,26 @@ std::vector<int> puntajes;
 
 int gameLoop(int gameMode) {
     int ch;
-
     nodelay(stdscr, TRUE);
 
     Mapa mapa;
+    
+    mapa.generarMapa(gameMode);
+    
+    int cx = mapa.getAncho() / 2;
+    int cy = mapa.getAlto() / 2;
+    
+    // Fantasmas dentro de la caja central
     std::vector<Ghost*> fantasmas = {
-        new Ghost(15, 10, "1", mapa),
-        new Ghost(15, 11, "2", mapa),
-        new Ghost(15, 12, "3", mapa)
+        new Ghost(cx - 2, cy, "1", mapa),
+        new Ghost(cx, cy, "2", mapa),
+        new Ghost(cx + 2, cy, "3", mapa)
     };
-    Pacman pacman(15, 10, mapa);
+    
+    // Pacman fuera de la caja, abajo
+    Pacman pacman(cx, cy + 6, mapa);
 
-    /*
-    * Ajustes según la modalidad seleccionada
-    */
+    // Ajustes según la modalidad seleccionada
     switch (gameMode) {
         case 0: // Modo Clásico
             // Configuración por defecto 
@@ -34,18 +40,18 @@ int gameLoop(int gameMode) {
             
         case 1: // Fantasmas Más Rápidos
             for (auto& fantasma : fantasmas) {
-                // Agredar lógica para aumentar la velocidad de los fantasmas
+                // Lógica para aumentar la velocidad de los fantasmas
+                // Puedes ajustar el moveDelay en Ghost si lo haces accesible
             }
             break;
             
         case 2: // Dos Jugadores
-            // Aquí implementarías la lógica para el segundo jugador
+            // Implementar lógica para el segundo jugador
             break;
     }
-
-    mapa.generarMapa();
-    mapa.setVerticalLine(0.2 * mapa.getAncho(), 0.5 * mapa.getAlto(), mapa.getAlto());
-    mapa.setHorizontalLine(0.5 * mapa.getAlto(), 0.2 * mapa.getAncho(), 0.9 * mapa.getAncho());
+    
+    // mapa.setVerticalLine(0.2 * mapa.getAncho(), 0.5 * mapa.getAlto(), mapa.getAlto());
+    // mapa.setHorizontalLine(0.5 * mapa.getAlto(), 0.2 * mapa.getAncho(), 0.9 * mapa.getAncho());
     
     // Mostrar información de la modalidad activa
     std::vector<std::string> modeNames = {"CLASICO", "RAPIDO", "2 JUGADORES"};
@@ -129,15 +135,13 @@ int main() {
     while (true) {
         int menuChoice = drawMainMenu();
 
-        if (menuChoice == 0) { // Opción de "Iniciar Juego"
-            // PRIMERO mostrar selección de modalidad
+        if (menuChoice == 0) {
             int gameMode = drawGameModeMenu();
             
-            if (gameMode == 3) { // Si seleccionó "Volver"
-                continue; // Volver al menú principal sin iniciar juego
+            if (gameMode == 3) {
+                continue;
             }
             
-            // Aquí puedes mostrar información de la modalidad seleccionada
             std::vector<std::string> modeNames = {
                 "Modo Clasico", 
                 "Fantasmas Más Rápidos", 
@@ -145,17 +149,15 @@ int main() {
             };
             
             clear();
-
             
-            // Iniciar el juego con la modalidad seleccionada
             int final_score = gameLoop(gameMode);
             handle_end_of_game(final_score);
             
-        } else if (menuChoice == 1) { // Opción de "Instrucciones"
+        } else if (menuChoice == 1) {
             drawInstructions();
-        } else if (menuChoice == 2) { // Opción de "Ver Puntajes"
+        } else if (menuChoice == 2) {
             display_highscore_screen();
-        } else if (menuChoice == 3) { // Opción de "Salir"
+        } else if (menuChoice == 3) {
             break;
         }
     }

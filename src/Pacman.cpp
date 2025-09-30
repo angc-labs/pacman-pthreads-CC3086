@@ -22,14 +22,14 @@ void Pacman::moveInput() {
 }
 
 bool Pacman::checkCollision(int tempX, int tempY) const {
-    return (
-        tempX <= 0 ||
-        tempX >= mapa.getAncho() - 2 ||
-        tempY <= 0 ||
-        tempY >= mapa.getAlto() - 1 ||
-        mapa.isWall(tempX+1, tempY) ||
-        mapa.isWall(tempX, tempY)
-        );
+    // Verificar límites del mapa
+    if (tempX <= 0 || tempX >= mapa.getAncho() - 1 ||
+        tempY <= 0 || tempY >= mapa.getAlto() - 1) {
+        return true;
+    }
+    
+    // Solo verificar si la posición exacta es una pared
+    return mapa.isWall(tempX, tempY);
 }
 
 bool Pacman::shouldMoveThisFrame() {

@@ -30,22 +30,23 @@ void Ghost::move() {
 }
 
 bool Ghost::checkCollision(int tempX, int tempY, const std::vector<Ghost*>& ghosts) const {
-    if (
-    tempX <= 0 ||
-    tempX >= mapa.getAncho() - 2 ||
-    tempY <= 0 ||
-    tempY >= mapa.getAlto() - 1 ||
-    mapa.isWall(tempX+1, tempY) ||
-    mapa.isWall(tempX, tempY)
-) {
+    // Verificar límites del mapa
+    if (tempX <= 0 || tempX >= mapa.getAncho() - 1 ||
+        tempY <= 0 || tempY >= mapa.getAlto() - 1) {
+        return true;
+    }
+    
+    // Verificar si la posición es una pared
+    if (mapa.isWall(tempX, tempY)) {
         return true;
     }
 
+    // Verificar colisión con otros fantasmas
     for (const auto& fantasma : ghosts) {
         if (fantasma && fantasma != this &&
             fantasma->getX() == tempX && fantasma->getY() == tempY) {
             return true;
-            }
+        }
     }
 
     return false;
@@ -87,6 +88,7 @@ void Ghost::update(const std::vector<Ghost*>& ghosts) {
         y = tempY;
     }
 }
+
 void Ghost::setEstado(const std::string& nuevoEstado) {
     estado = nuevoEstado;
 }

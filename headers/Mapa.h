@@ -18,21 +18,29 @@ class Punto;
 
 class Mapa {
 private:
-    std::vector<std::vector<Object*>> mapa;        // Vector para almacenar punteros a objetos
-    int score, vidas, ancho, alto;    // Puntuación, vidas, dimensiones del mapa
-    std::vector<PowerUp*> powerups;   // Vector para almacenar power-ups
+    std::vector<std::vector<Object*>> mapa;
+    int score, vidas, ancho, alto;
+    std::vector<PowerUp*> powerups;
+
+    // Métodos privados para generar mapas específicos
+    void generarMapaClasico();
+    void generarMapaRapido();
+    void generarMapaDosJugadores();
 
 public:
     Mapa();
     ~Mapa();
 
-    void generarMapa();
+    // Ahora acepta un parámetro de modalidad (0=Clásico, 1=Rápido, 2=Dos Jugadores)
+    void generarMapa(int modalidad = 0);
+    
     void setPuente(int y, int size);
     void setXPuente(int x, int size);
     void setVerticalLine(int x, int startY, int endY);
     void setHorizontalLine(int y, int startX, int endX);
-    Object* getObjectAt(int x, int y);
-    bool isWall(int x, int y);
+    Object* getObjectAt(int x, int y) const;
+    bool isWall(int x, int y) const;
+    std::pair<int, int> findFreeCellNear(int cx, int cy) const;
 
     // Getters y setters
     int getScore() const;
@@ -46,8 +54,6 @@ public:
     void draw();
     void addScore(int puntos);
     void loseLife();
-
-    // limpiar area especifica
     void clearArea(int x, int y);
 };
 

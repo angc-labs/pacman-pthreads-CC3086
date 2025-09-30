@@ -36,7 +36,6 @@ private:
     bool checkCollision(int tempX, int tempY, const std::vector<Ghost*>& ghosts) const;
     void move();
     bool shouldMoveThisFrame();
-
 };
 
 #endif //GHOST_H
