@@ -1,3 +1,10 @@
+/*
+* Universidad del Valle de Guatemala
+* PROGRAMACIÓN DE MICROPROCESADORES
+* Sección: 20
+* Ficha: src/main.cpp
+*/
+
 #include <iostream>
 #include <ncurses.h>
 #include "ui.h"
