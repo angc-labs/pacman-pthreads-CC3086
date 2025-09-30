@@ -280,9 +280,8 @@ int drawGameModeMenu() {
     * Menu de selección de modalidad de juego 
     */
     std::vector<std::string> options = {
-        "Modo Clasico",
-        "Fantasmas Mas Rapidos", 
-        "Dos Jugadores",
+        "Modo clasico",
+        "Dos jugadores",
         "Volver"
     };
     

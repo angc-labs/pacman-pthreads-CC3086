@@ -16,9 +16,10 @@ Object::~Object() {
 
 void Object::draw() {
     static std::map<char, const char*> emojis = {
-        {'C', "💩"},
+        {'C', "🟡"},
         {'G', "👻"},
-        {'P', "⭐"}
+        {'P', "⭐"},
+        {'M', "👾"}
     };
 
     // Aquí las claves son IDs de pares de colores, no colores directos
